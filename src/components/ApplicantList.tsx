@@ -1,4 +1,5 @@
 import React from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Applicant } from "../data";
 import { useSelectionContext } from "../contexts/SelectionContext";
 import StatusMenu from "./StatusMenu";
@@ -12,6 +13,11 @@ interface ApplicantListProps {
 
 const ApplicantList: React.FC<ApplicantListProps> = ({ applicants, onUpdateApplicantStatus }) => {
 	const { selectedIds, handleCheckboxChange } = useSelectionContext();
+	const navigate = useNavigate();
+
+	const handleRowClick = (applicationId: string) => {
+		navigate(`/applicants/${applicationId}`);
+	};
 
 	return (
 		<>
@@ -34,8 +40,21 @@ const ApplicantList: React.FC<ApplicantListProps> = ({ applicants, onUpdateAppli
 					</thead>
 					<tbody className="bg-white divide-y divide-gray-200">
 						{applicants.map((applicant, index) => (
-							<tr key={applicant.id} className={selectedIds.includes(applicant.id) ? "bg-blue-50" : ""}>
-								<td className="pl-4">
+							<tr 
+								key={applicant.id} 
+								className={`${selectedIds.includes(applicant.id) ? "bg-blue-50" : ""} cursor-pointer hover:bg-gray-50`}
+								onClick={(e) => {
+									// Don't navigate if clicking on checkbox or status menu
+									if (
+										(e.target as HTMLElement).closest('input[type="checkbox"]') ||
+										(e.target as HTMLElement).closest('.status-menu')
+									) {
+										return;
+									}
+									handleRowClick(applicant.applicationId);
+								}}
+							>
+								<td className="pl-4" onClick={(e) => e.stopPropagation()}>
 									<input
 										type="checkbox"
 										checked={selectedIds.includes(applicant.id)}
@@ -44,17 +63,25 @@ const ApplicantList: React.FC<ApplicantListProps> = ({ applicants, onUpdateAppli
 									/>
 								</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.rank}</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">{applicant.applicationId}</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{applicant.firstName}</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{applicant.lastName}</td>
+								<td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+									<Link to={`/applicants/${applicant.applicationId}`}>{applicant.applicationId}</Link>
+								</td>
+								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+									<Link to={`/applicants/${applicant.applicationId}`}>{applicant.firstName}</Link>
+								</td>
+								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+									<Link to={`/applicants/${applicant.applicationId}`}>{applicant.lastName}</Link>
+								</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.hh}</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.requests}</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.updated}</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.substatus}</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-									<StatusMenu currentStatus={applicant.status} onUpdateStatus={(newStatus) => onUpdateApplicantStatus(applicant.id, newStatus)} />
+								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
+									<div className="status-menu">
+										<StatusMenu currentStatus={applicant.status} onUpdateStatus={(newStatus) => onUpdateApplicantStatus(applicant.id, newStatus)} />
+									</div>
 								</td>
-								<td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+								<td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
 									<CommentIcon className="w-5 h-5" />
 								</td>
 							</tr>
