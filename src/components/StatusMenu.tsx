@@ -34,7 +34,7 @@ const StatusMenu: React.FC<StatusMenuProps> = ({ currentStatus = "", onUpdateSta
 		<div className="relative" ref={menuRef}>
 			<button
 				onClick={() => setIsOpen(!isOpen)}
-				className={`w-[15ch] flex items-center justify-between px-3 py-1 text-sm font-bold rounded border ${currentStyle.backgroundColor} ${currentStyle.textColor} ${currentStyle.borderColor}`}
+				className={`w-[18ch] flex items-center justify-between px-3 py-1 text-sm font-bold rounded border ${currentStyle.backgroundColor} ${currentStyle.textColor} ${currentStyle.borderColor}`}
 			>
 				<span className="uppercase">{currentStyle.label}</span>
 				<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

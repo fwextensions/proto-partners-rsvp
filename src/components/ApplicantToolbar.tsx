@@ -30,7 +30,8 @@ const ApplicantToolbar: React.FC<ApplicantToolbarProps> = ({ applicants, onInvit
 				<div className="relative">
 					<button
 						onClick={() => setIsEmailDropdownOpen(!isEmailDropdownOpen)}
-						className="px-4 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 flex items-center"
+						className="px-4 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700 flex items-center disabled:opacity-50"
+						disabled={selectedIds.length === 0}
 					>
 						SEND EMAIL
 						<svg className="-mr-1 ml-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

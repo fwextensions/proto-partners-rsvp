@@ -13,6 +13,8 @@ function App() {
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dialogSelectedCount, setDialogSelectedCount] = useState(0);
 	const [dialogAltContactCount, setDialogAltContactCount] = useState(0);
+	const [dialogSelectedIds, setDialogSelectedIds] = useState<number[]>([]);
+	const [selectionKey, setSelectionKey] = useState(0);
 
 	const applicants = pagedApplicants[currentPage - 1];
 
@@ -52,6 +54,7 @@ function App() {
 	};
 
 	const handleOpenConfirm = (selectedIds: number[], altCount: number) => {
+		setDialogSelectedIds(selectedIds);
 		setDialogSelectedCount(selectedIds.length);
 		setDialogAltContactCount(altCount);
 		setIsConfirmDialogOpen(true);
@@ -62,16 +65,29 @@ function App() {
 	};
 
 	const handleConfirmSend = () => {
-		// we'll add the logic to update applicant state later
-		console.log("Email sent!");
+		const newPagedApplicants = pagedApplicants.map((page) =>
+			page.map((applicant) =>
+				dialogSelectedIds.includes(applicant.id)
+					? {
+						...applicant,
+						status: "Processing",
+						substatus: "📧 Invitation to apply sent",
+						updated: new Date().toLocaleDateString("en-US"),
+					}
+					: applicant,
+			)
+		);
+		setPagedApplicants(newPagedApplicants);
+		// clear selection by re-mounting provider
+		setSelectionKey((k) => k + 1);
 		setIsConfirmDialogOpen(false);
 	};
 
 	return (
-		<SelectionProvider items={applicants}>
+		<SelectionProvider key={selectionKey} items={applicants}>
 			<div className="font-sans bg-gray-50 min-h-screen">
 				<Header />
-				<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+				<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
 					<div className="mb-6">
 						<p className="text-sm text-gray-500">Lease Ups &gt; Quincy &gt; Applicant list</p>
 						<h2 className="text-3xl font-bold text-gray-800">QUINCY</h2>

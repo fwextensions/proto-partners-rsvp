@@ -3,6 +3,7 @@ import { Applicant } from "../data";
 import { useSelectionContext } from "../contexts/SelectionContext";
 import StatusMenu from "./StatusMenu";
 import { Status } from "../statuses.ts";
+import CommentIcon from "./CommentIcon"; // Assuming CommentIcon is in the same directory
 
 interface ApplicantListProps {
 	applicants: Applicant[];
@@ -53,7 +54,9 @@ const ApplicantList: React.FC<ApplicantListProps> = ({ applicants, onUpdateAppli
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 									<StatusMenu currentStatus={applicant.status} onUpdateStatus={(newStatus) => onUpdateApplicantStatus(applicant.id, newStatus)} />
 								</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">...</td>
+								<td className="px-2 py-4 whitespace-nowrap text-sm text-gray-500">
+									<CommentIcon className="w-5 h-5" />
+								</td>
 							</tr>
 						))}
 					</tbody>
