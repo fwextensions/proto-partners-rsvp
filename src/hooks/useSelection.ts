@@ -15,6 +15,8 @@ export interface UseSelectionResult {
 
 /**
  * Hook to manage selection state with shift-click range support.
+ * 
+ * Note: This hook will be used by context.
  */
 export function useSelection<T extends { id: number }>(items: T[]): UseSelectionResult {
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
