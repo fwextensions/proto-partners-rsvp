@@ -2,11 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import { STATUSES, STATUS_ORDER, Status } from "../statuses";
 
 interface StatusMenuProps {
-	currentStatus: Status;
+	currentStatus: Status | undefined;
 	onUpdateStatus: (newStatus: Status) => void;
 }
 
-const StatusMenu: React.FC<StatusMenuProps> = ({ currentStatus, onUpdateStatus }) => {
+const StatusMenu: React.FC<StatusMenuProps> = ({ currentStatus = "", onUpdateStatus }) => {
 	const [isOpen, setIsOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement>(null);
 
@@ -34,7 +34,7 @@ const StatusMenu: React.FC<StatusMenuProps> = ({ currentStatus, onUpdateStatus }
 		<div className="relative" ref={menuRef}>
 			<button
 				onClick={() => setIsOpen(!isOpen)}
-				className={`w-full flex items-center justify-between px-3 py-1 text-sm font-bold rounded border ${currentStyle.backgroundColor} ${currentStyle.textColor} ${currentStyle.borderColor}`}
+				className={`w-[15ch] flex items-center justify-between px-3 py-1 text-sm font-bold rounded border ${currentStyle.backgroundColor} ${currentStyle.textColor} ${currentStyle.borderColor}`}
 			>
 				<span className="uppercase">{currentStyle.label}</span>
 				<svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

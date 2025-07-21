@@ -1,4 +1,10 @@
 export const STATUSES = {
+	"": {
+		label: "Status",
+		textColor: "text-gray-400",
+		backgroundColor: "bg-white",
+		borderColor: "border-gray-400",
+	},
 	Processing: {
 		label: "Processing",
 		textColor: "text-gray-800",

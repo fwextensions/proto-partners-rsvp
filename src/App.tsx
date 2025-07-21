@@ -8,16 +8,17 @@ import { Status } from "./statuses";
 import Header from "./components/Header";
 
 function App() {
+	const [pagedApplicants, setPagedApplicants] = useState(initialPagedApplicants);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [isEmailDropdownOpen, setIsEmailDropdownOpen] = useState(false);
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-	const applicants = initialPagedApplicants[currentPage - 1];
+	const applicants = pagedApplicants[currentPage - 1];
 
 	const { selectedIds, isAllSelected, handleSelectAll, handleCheckboxChange, clearSelection } = useSelection(applicants);
 
 	const handleNextPage = () => {
-		if (currentPage < initialPagedApplicants.length) {
+		if (currentPage < pagedApplicants.length) {
 			setCurrentPage(currentPage + 1);
 			clearSelection();
 		}
@@ -36,7 +37,7 @@ function App() {
 			setCurrentPage(0);
 		} else {
 			const page = parseInt(value, 10);
-			if (page > 0 && page <= initialPagedApplicants.length) {
+			if (page > 0 && page <= pagedApplicants.length) {
 				setCurrentPage(page);
 				clearSelection();
 			}
@@ -59,13 +60,14 @@ function App() {
 	};
 
 	const handleUpdateApplicantStatus = (applicantId: number, newStatus: Status) => {
-		const newPagedApplicants = initialPagedApplicants.map((page) =>
+		const newPagedApplicants = pagedApplicants.map((page) =>
 			page.map((applicant) =>
 				applicant.id === applicantId
 					? { ...applicant, latestSubstatus: newStatus, updated: new Date().toLocaleDateString("en-US") }
 					: applicant
 			)
 		);
+		setPagedApplicants(newPagedApplicants);
 	};
 
 	const selectedCount = selectedIds.length;
@@ -169,10 +171,10 @@ function App() {
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.hh}</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.requests}</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.updated}</td>
-									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.latestSubstatus}</td>
+									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.substatus}</td>
 									<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
 										<StatusMenu
-											currentStatus={applicant.latestSubstatus}
+											currentStatus={applicant.status}
 											onUpdateStatus={(newStatus) => handleUpdateApplicantStatus(applicant.id, newStatus)}
 										/>
 									</td>
@@ -199,12 +201,12 @@ function App() {
 							onChange={handlePageInputChange}
 							className="w-12 text-center border-gray-300 rounded-md"
 						/>
-						of {initialPagedApplicants.length}
+						of {pagedApplicants.length}
 					</div>
 					<button
 						className="px-4 py-2 border border-blue-500 text-white bg-blue-600 rounded-md disabled:opacity-50"
 						onClick={handleNextPage}
-						disabled={currentPage >= initialPagedApplicants.length}
+						disabled={currentPage >= pagedApplicants.length}
 					>
 						NEXT
 					</button>
