@@ -1,64 +1,32 @@
 import { useState } from "react";
-import { pagedApplicants as initialPagedApplicants, Applicant } from "./data";
+import { pagedApplicants as initialPagedApplicants } from "./data";
+import { useSelection } from "./hooks/useSelection";
 import DropdownMenu from "./components/DropdownMenu";
 import ConfirmationDialog from "./components/ConfirmationDialog";
 import StatusMenu from "./components/StatusMenu";
 import { Status } from "./statuses";
+import Header from "./components/Header";
 
 function App() {
-	const [pagedApplicants, setPagedApplicants] = useState(initialPagedApplicants);
 	const [currentPage, setCurrentPage] = useState(1);
-	const [selected, setSelected] = useState<number[]>([]);
-	const [lastCheckedIndex, setLastCheckedIndex] = useState<number | null>(null);
 	const [isEmailDropdownOpen, setIsEmailDropdownOpen] = useState(false);
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-	const applicants = pagedApplicants[currentPage - 1];
+	const applicants = initialPagedApplicants[currentPage - 1];
 
-	const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-		if (e.target.checked) {
-			setSelected(applicants.map((a) => a.id));
-		} else {
-			setSelected([]);
-		}
-		setLastCheckedIndex(null);
-	};
-
-	const handleCheckboxChange = (
-		index: number,
-		applicantId: number,
-		e: React.ChangeEvent<HTMLInputElement>
-	) => {
-		const isChecked = e.target.checked;
-
-		if (e.nativeEvent instanceof MouseEvent && e.nativeEvent.shiftKey && lastCheckedIndex !== null) {
-			const start = Math.min(lastCheckedIndex, index);
-			const end = Math.max(lastCheckedIndex, index);
-			const rangeIds = applicants.slice(start, end + 1).map((a) => a.id);
-			const newSelected = [...new Set([...selected, ...rangeIds])];
-			setSelected(newSelected);
-		} else {
-			if (isChecked) {
-				setSelected([...selected, applicantId]);
-			} else {
-				setSelected(selected.filter((id) => id !== applicantId));
-			}
-		}
-
-		setLastCheckedIndex(index);
-	};
+	const { selectedIds, isAllSelected, handleSelectAll, handleCheckboxChange, clearSelection } = useSelection(applicants);
 
 	const handleNextPage = () => {
-		if (currentPage < pagedApplicants.length) {
+		if (currentPage < initialPagedApplicants.length) {
 			setCurrentPage(currentPage + 1);
-			setSelected([]);
+			clearSelection();
 		}
 	};
 
 	const handlePrevPage = () => {
 		if (currentPage > 1) {
 			setCurrentPage(currentPage - 1);
-			setSelected([]);
+			clearSelection();
 		}
 	};
 
@@ -68,9 +36,9 @@ function App() {
 			setCurrentPage(0);
 		} else {
 			const page = parseInt(value, 10);
-			if (page > 0 && page <= pagedApplicants.length) {
+			if (page > 0 && page <= initialPagedApplicants.length) {
 				setCurrentPage(page);
-				setSelected([]);
+				clearSelection();
 			}
 		}
 	};
@@ -91,57 +59,23 @@ function App() {
 	};
 
 	const handleUpdateApplicantStatus = (applicantId: number, newStatus: Status) => {
-		const newPagedApplicants = pagedApplicants.map((page) =>
+		const newPagedApplicants = initialPagedApplicants.map((page) =>
 			page.map((applicant) =>
 				applicant.id === applicantId
 					? { ...applicant, latestSubstatus: newStatus, updated: new Date().toLocaleDateString("en-US") }
 					: applicant
 			)
 		);
-		setPagedApplicants(newPagedApplicants);
 	};
 
-	const selectedCount = selected.length;
+	const selectedCount = selectedIds.length;
 	const alternateContactCount = applicants.filter(
-		(applicant) => selected.includes(applicant.id) && applicant.hasAlternateContact
+		(applicant) => selectedIds.includes(applicant.id) && applicant.hasAlternateContact
 	).length;
 
 	return (
 		<div className="font-sans bg-gray-50 min-h-screen">
-			<header className="bg-white shadow-sm">
-				<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-					<div className="flex justify-between items-center py-4">
-						<div className="flex items-center space-x-4">
-							<div className="bg-blue-600 p-3 rounded-md">
-								<svg
-									className="w-6 h-6 text-white"
-									fill="none"
-									stroke="currentColor"
-									viewBox="0 0 24 24"
-									xmlns="http://www.w3.org/2000/svg"
-								>
-									<path
-										strokeLinecap="round"
-										strokeLinejoin="round"
-										strokeWidth="2"
-										d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-									></path>
-								</svg>
-							</div>
-							<h1 className="text-xl font-semibold text-gray-800">DAHLIA PARTNERS</h1>
-						</div>
-						<nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600">
-							<a href="#" className="hover:text-blue-600">LISTINGS</a>
-							<a href="#" className="hover:text-blue-600">APPLICATIONS</a>
-							<a href="#" className="hover:text-blue-600">PENDING FLAGGED APPS</a>
-							<a href="#" className="hover:text-blue-600">MARKED DUPLICATE APPS</a>
-							<a href="#" className="text-blue-600 border-b-2 border-blue-600 pb-1">LEASE UPS</a>
-						</nav>
-						<a href="#" className="text-sm font-medium text-gray-600">SIGN OUT</a>
-					</div>
-				</div>
-			</header>
-
+			<Header />
 			<main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 				<div className="mb-6">
 					<p className="text-sm text-gray-500">Lease Ups &gt; Quincy &gt; Applicant list</p>
@@ -155,7 +89,7 @@ function App() {
 							type="checkbox"
 							className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
 							onChange={handleSelectAll}
-							checked={selected.length === applicants.length && applicants.length > 0}
+							checked={isAllSelected}
 						/>
 						<button className="px-4 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700">SET STATUS</button>
 						<button className="px-4 py-2 text-sm border border-gray-300 rounded-md bg-white text-gray-700">ADD COMMENT</button>
@@ -219,11 +153,11 @@ function App() {
 						</thead>
 						<tbody className="bg-white divide-y divide-gray-200">
 							{applicants.map((applicant, index) => (
-								<tr key={applicant.id} className={selected.includes(applicant.id) ? "bg-blue-50" : ""}>
+								<tr key={applicant.id} className={selectedIds.includes(applicant.id) ? "bg-blue-50" : ""}>
 									<td className="pl-4">
 										<input
 											type="checkbox"
-											checked={selected.includes(applicant.id)}
+											checked={selectedIds.includes(applicant.id)}
 											onChange={(e) => handleCheckboxChange(index, applicant.id, e)}
 											className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
 										/>
@@ -265,12 +199,12 @@ function App() {
 							onChange={handlePageInputChange}
 							className="w-12 text-center border-gray-300 rounded-md"
 						/>
-						of {pagedApplicants.length}
+						of {initialPagedApplicants.length}
 					</div>
 					<button
 						className="px-4 py-2 border border-blue-500 text-white bg-blue-600 rounded-md disabled:opacity-50"
 						onClick={handleNextPage}
-						disabled={currentPage >= pagedApplicants.length}
+						disabled={currentPage >= initialPagedApplicants.length}
 					>
 						NEXT
 					</button>
