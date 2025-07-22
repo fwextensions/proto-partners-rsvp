@@ -74,7 +74,9 @@ const ApplicantList: React.FC<ApplicantListProps> = ({ applicants, onUpdateAppli
 								</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.hh}</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.requests}</td>
-								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.updated}</td>
+								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+									{applicant.updated ? applicant.updated : <em className="italic text-gray-400">none</em>}
+								</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{applicant.substatus}</td>
 								<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500" onClick={(e) => e.stopPropagation()}>
 									<div className="status-menu">
