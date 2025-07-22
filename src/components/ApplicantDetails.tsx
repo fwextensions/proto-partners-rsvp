@@ -1,18 +1,16 @@
 import React from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Applicant } from "../data";
 import StatusMenu from "./StatusMenu";
 import { Status } from "../statuses";
 
 interface ApplicantDetailsProps {
-	findApplicantById: (id: string) => Applicant | null;
+	applicant: Applicant | null;
 	onUpdateApplicantStatus?: (id: number, newStatus: Status) => void;
 }
 
-const ApplicantDetails: React.FC<ApplicantDetailsProps> = ({ findApplicantById, onUpdateApplicantStatus }) => {
+const ApplicantDetails: React.FC<ApplicantDetailsProps> = ({ applicant, onUpdateApplicantStatus }) => {
 	const navigate = useNavigate();
-	const { id } = useParams<{ id: string }>();
-	const applicant = findApplicantById(id || "");
 
 	if (!applicant) {
 		return <div className="text-center py-10">Applicant not found</div>;
