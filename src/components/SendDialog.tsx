@@ -1,13 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
 interface SendDialogProps {
 	onClose: () => void;
-	onConfirm: (url: string, deadline: string) => void;
+	onConfirm: () => void;
 	selectedCount: number;
 	alternateContactCount: number;
 	documentUrl: string;
 	deadline: string;
 	noEmailCount: number;
+	onEditUrl: () => void;
+	onEditDeadline: () => void;
 }
 
 const SendDialog: React.FC<SendDialogProps> = ({ 
@@ -17,31 +19,39 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	alternateContactCount, 
 	documentUrl, 
 	deadline, 
-	noEmailCount 
+	noEmailCount, 
+	onEditUrl,
+	onEditDeadline,
 }) => {
-	const getDefaultDeadline = () => {
-		const today = new Date();
-		const futureDate = new Date(today);
-		futureDate.setDate(today.getDate() + 5);
-	
-		const year = futureDate.getFullYear();
-		const month = String(futureDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-		const day = String(futureDate.getDate()).padStart(2, '0');
-	
-		return `${year}-${month}-${day} 11:59 PM`;
-	};
-
-	const [isEditingUrl, setIsEditingUrl] = useState(!documentUrl);
-	const [isEditingDeadline, setIsEditingDeadline] = useState(!deadline);
-	const [currentUrl, setCurrentUrl] = useState(documentUrl);
-	const [currentDeadline, setCurrentDeadline] = useState(deadline || getDefaultDeadline());
-
 	const totalRecipients = selectedCount + alternateContactCount;
 
-	const isSendDisabled = !currentUrl || !currentDeadline;
+	const isSendDisabled = !documentUrl || !deadline;
 
-	// Extract just the date part for the input value, e.g., YYYY-MM-DD
-	const deadlineDatePart = currentDeadline.split(' ')[0] || '';
+	const formatDeadline = (deadlineStr: string) => {
+		if (!deadlineStr) return "Not set";
+		
+		const months = [
+			'January', 'February', 'March', 'April', 'May', 'June',
+			'July', 'August', 'September', 'October', 'November', 'December'
+		];
+		
+		// Parse "YYYY-MM-DD 11:59 PM" format
+		const datePart = deadlineStr.split(' ')[0];
+		const [year, month, day] = datePart.split('-');
+		
+		if (year && month && day) {
+			const monthName = months[parseInt(month) - 1];
+			return `${monthName} ${parseInt(day)}, ${year} 11:59 PM Pacific Time`;
+		}
+		
+		return deadlineStr;
+	};
+
+	const handleConfirm = () => {
+		if (!isSendDisabled) {
+			onConfirm();
+		}
+	};
 
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -51,21 +61,14 @@ const SendDialog: React.FC<SendDialogProps> = ({
 		};
 
 		document.addEventListener("keydown", handleKeyDown);
-
 		return () => {
 			document.removeEventListener("keydown", handleKeyDown);
 		};
 	}, [onClose]);
 
-	const handleConfirm = () => {
-		if (!isSendDisabled) {
-			onConfirm(currentUrl, currentDeadline);
-		}
-	};
-
 	return (
-		<div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center font-sans">
-			<div className="bg-white rounded-lg shadow-xl w-full max-w-lg relative flex flex-col p-8">
+		<div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center" onClick={onClose}>
+			<div className="bg-white rounded-lg shadow-xl w-full max-w-lg relative flex flex-col p-8" onClick={(e) => e.stopPropagation()}>
 				<button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
 					<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -81,34 +84,15 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					<p><span className="font-semibold">You are sending:</span> Invitation to Apply</p>
 					<div>
 						<p className="font-semibold">Document upload URL: 
-							{!isEditingUrl && <button onClick={() => setIsEditingUrl(true)} className="text-blue-600 underline font-normal ml-2">Edit</button>}
+							<button onClick={onEditUrl} className="text-blue-600 underline font-normal ml-2">Edit</button>
 						</p>
-						{isEditingUrl ? (
-							<input 
-								type="text" 
-								value={currentUrl} 
-								onChange={(e) => setCurrentUrl(e.target.value)} 
-								placeholder="https://app.box.com/upload-widget/view/"
-								className="border border-gray-300 rounded px-3 py-2 w-full mt-1"
-							/>
-						) : (
-							<p className="text-gray-600 break-all">{currentUrl}</p>
-						)}
+						<p className="text-gray-600 break-all">{documentUrl || "Not set"}</p>
 					</div>
 					<div>
 						<p className="font-semibold">Deadline: 
-							{!isEditingDeadline && <button onClick={() => setIsEditingDeadline(true)} className="text-blue-600 underline font-normal ml-2">Edit</button>}
+							<button onClick={onEditDeadline} className="text-blue-600 underline font-normal ml-2">Edit</button>
 						</p>
-						{isEditingDeadline ? (
-							<input 
-								type="date" 
-								value={deadlineDatePart}
-								onChange={(e) => setCurrentDeadline(`${e.target.value} 11:59 PM`)} 
-								className="border border-gray-300 rounded px-3 py-2 w-full mt-1"
-							/>
-						) : (
-							<p>{currentDeadline}</p>
-						)}
+						<p>{formatDeadline(deadline)}</p>
 					</div>
 					<div>
 						<p className="font-semibold">Total recipients: {totalRecipients} people</p>
@@ -129,7 +113,8 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					<button
 						onClick={handleConfirm}
 						disabled={isSendDisabled}
-						className="px-6 py-3 bg-blue-600 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+						className="px-6 py-3 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
+						style={{ backgroundColor: '#0077da' }}
 					>
 						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 							<path d="M1.33301 1.33301L14.6663 8.66634L1.33301 15.9997V9.99967L10.6663 8.66634L1.33301 7.33301V1.33301Z" fill="white"/>

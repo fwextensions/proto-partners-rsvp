@@ -14,6 +14,8 @@ import ApplicantList from "./components/ApplicantList";
 import ApplicantDetails from "./components/ApplicantDetails";
 import ApplicantToolbar from "./components/ApplicantToolbar";
 import Header from "./components/Header";
+import UploadURLDialog from "./components/UploadURLDialog";
+import DeadlineDialog from "./components/DeadlineDialog";
 import { Status } from "./statuses";
 import { SelectionProvider } from "./contexts/SelectionContext";
 
@@ -36,11 +38,13 @@ function Root() {
 	const [dialogAltContactCount, setDialogAltContactCount] = useState(0);
 	const [dialogSelectedIds, setDialogSelectedIds] = useState<number[]>([]);
 	const [selectionKey, setSelectionKey] = useState(0);
-
-	// Hardcoded data based on the screenshot for now
 	const [documentUrl, setDocumentUrl] = useState("");
 	const [deadline, setDeadline] = useState("");
 	const [noEmailCount, setNoEmailCount] = useState(4);
+	const [isUploadURLDialogOpen, setIsUploadURLDialogOpen] = useState(false);
+	const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
+	const [isInSendChain, setIsInSendChain] = useState(false);
+	const [defaultDeadline, setDefaultDeadline] = useState("");
 
 	const applicants = pagedApplicants[currentPage - 1] || [];
 
@@ -79,10 +83,42 @@ function Root() {
 		setPagedApplicants(newPagedApplicants);
 	};
 
+	const calculateDefaultDeadline = () => {
+		const date = new Date();
+		date.setDate(date.getDate() + 5);
+		const year = date.getFullYear();
+		const month = String(date.getMonth() + 1).padStart(2, '0');
+		const day = String(date.getDate()).padStart(2, '0');
+		return `${year}-${month}-${day} 11:59 PM`;
+	};
+
 	const handleOpenConfirm = (selectedIds: number[], altCount: number) => {
+		console.log('handleOpenConfirm called:', { selectedCount: selectedIds.length, altCount, documentUrl, deadline });
 		setDialogSelectedIds(selectedIds);
 		setDialogSelectedCount(selectedIds.length);
 		setDialogAltContactCount(altCount);
+		console.log('Setting isInSendChain = true (starting chain)');
+		setIsInSendChain(true); // Mark that we're in the send chain
+		
+		// Check if upload URL is set first
+		if (!documentUrl) {
+			console.log('Opening UploadURLDialog - no URL set');
+			setIsUploadURLDialogOpen(true);
+			return;
+		}
+		
+		// Then check if deadline is set
+		if (!deadline) {
+			console.log('Opening DeadlineDialog - no deadline set');
+			setDefaultDeadline(calculateDefaultDeadline());
+			setIsDeadlineDialogOpen(true);
+			return;
+		}
+		
+		// Both are set, show send dialog
+		console.log('Opening SendDialog immediately - both URL and deadline set');
+		console.log('Setting isInSendChain = false (exiting chain - immediate send)');
+		setIsInSendChain(false); // Exit send chain
 		setIsConfirmDialogOpen(true);
 	};
 
@@ -90,13 +126,90 @@ function Root() {
 		setIsConfirmDialogOpen(false);
 	};
 
-	const handleConfirmSend = (newUrl: string, newDeadline: string) => {
-		setDocumentUrl(newUrl);
-		setDeadline(newDeadline);
+	const handleOpenUploadURLDialog = () => {
+		setIsUploadURLDialogOpen(true);
+	};
 
+	const handleOpenDeadlineDialog = () => {
+		setIsDeadlineDialogOpen(true);
+	};
+
+	const handleCancelUploadURL = () => {
+		console.log('handleCancelUploadURL called - this should NOT happen during normal save!');
+		setIsUploadURLDialogOpen(false);
+		// Only reset selection state if we're canceling during the send chain
+		if (isInSendChain) {
+			console.log('Setting isInSendChain = false (canceling URL during chain)');
+			setDialogSelectedIds([]);
+			setDialogSelectedCount(0);
+			setDialogAltContactCount(0);
+			setIsInSendChain(false);
+		}
+	};
+
+	const handleCancelDeadline = () => {
+		console.log('handleCancelDeadline called - this should NOT happen during normal save!', { isInSendChain, dialogSelectedCount });
+		setIsDeadlineDialogOpen(false);
+		setDefaultDeadline(""); // Clear default when canceling
+		// Only reset selection state if we're canceling during the send chain
+		if (isInSendChain) {
+			console.log('Setting isInSendChain = false (canceling deadline during chain)');
+			setDialogSelectedIds([]);
+			setDialogSelectedCount(0);
+			setDialogAltContactCount(0);
+			setIsInSendChain(false);
+		}
+	};
+
+	const handleSaveUploadURL = (url: string) => {
+		console.log('handleSaveUploadURL called:', { url, isInSendChain, deadline });
+		setDocumentUrl(url);
+		setIsUploadURLDialogOpen(false);
+		
+		// Continue the chain: check if deadline is set
+		if (isInSendChain) {
+			if (!deadline) {
+				console.log('Continuing chain to DeadlineDialog');
+				setDefaultDeadline(calculateDefaultDeadline());
+				setIsDeadlineDialogOpen(true);
+			} else {
+				console.log('Continuing chain to SendDialog');
+				// Both URL and deadline are now set, show send dialog
+				console.log('Setting isInSendChain = false (exiting chain - URL save to send)');
+				setIsInSendChain(false); // Exit send chain
+				setIsConfirmDialogOpen(true);
+			}
+		} else {
+			console.log('Not in send chain after URL save');
+		}
+	};
+
+	const handleSaveDeadline = (newDeadline: string) => {
+		console.log('handleSaveDeadline called:', { newDeadline, isInSendChain, dialogSelectedCount });
+		const wasInSendChain = isInSendChain; // Capture current state
+		
+		setDeadline(newDeadline);
+		setDefaultDeadline(""); // Clear default after saving
+		setIsDeadlineDialogOpen(false);
+		
+		// Use setTimeout to ensure state updates are processed first
+		setTimeout(() => {
+			// After setting deadline, show send dialog if we're in the send chain
+			if (wasInSendChain) {
+				console.log('Opening SendDialog from deadline save');
+				console.log('Setting isInSendChain = false (exiting chain - deadline save to send)');
+				setIsInSendChain(false); // Exit send chain
+				setIsConfirmDialogOpen(true);
+			} else {
+				console.log('Not in send chain, not opening SendDialog');
+			}
+		}, 0);
+	};
+
+	const handleConfirmSend = () => {
 		const newPagedApplicants = pagedApplicants.map((page) =>
 			page.map((applicant) =>
-				(dialogSelectedIds.includes(applicant.id)
+				dialogSelectedIds.includes(applicant.id)
 					? {
 							...applicant,
 							status: "Processing",
@@ -104,7 +217,6 @@ function Root() {
 							updated: new Date().toLocaleDateString("en-US"),
 					  }
 					: applicant) as Applicant,
-			)
 		);
 		setPagedApplicants(newPagedApplicants);
 		// clear selection by re-mounting provider
@@ -138,6 +250,22 @@ function Root() {
 						documentUrl={documentUrl}
 						deadline={deadline}
 						noEmailCount={noEmailCount}
+						onEditUrl={handleOpenUploadURLDialog}
+						onEditDeadline={handleOpenDeadlineDialog}
+					/>
+				)}
+				{isUploadURLDialogOpen && (
+					<UploadURLDialog 
+						currentUrl={documentUrl}
+						onClose={handleCancelUploadURL}
+						onSave={handleSaveUploadURL}
+					/>
+				)}
+				{isDeadlineDialogOpen && (
+					<DeadlineDialog 
+						currentDeadline={deadline || defaultDeadline}
+						onClose={handleCancelDeadline}
+						onSave={handleSaveDeadline}
 					/>
 				)}
 			</div>
