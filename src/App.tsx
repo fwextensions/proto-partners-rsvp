@@ -44,7 +44,6 @@ function Root() {
 	const [isUploadURLDialogOpen, setIsUploadURLDialogOpen] = useState(false);
 	const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
 	const [isInSendChain, setIsInSendChain] = useState(false);
-	const [defaultDeadline, setDefaultDeadline] = useState("");
 
 	const applicants = pagedApplicants[currentPage - 1] || [];
 
@@ -97,6 +96,12 @@ function Root() {
 		setDialogSelectedIds(selectedIds);
 		setDialogSelectedCount(selectedIds.length);
 		setDialogAltContactCount(altCount);
+		
+		// Calculate how many selected applicants have no email
+		const selectedApplicants = pagedApplicants.flat().filter(applicant => selectedIds.includes(applicant.id));
+		const noEmailApplicants = selectedApplicants.filter(applicant => applicant.noEmail === true);
+		setNoEmailCount(noEmailApplicants.length);
+		
 		console.log('Setting isInSendChain = true (starting chain)');
 		setIsInSendChain(true); // Mark that we're in the send chain
 		
@@ -110,7 +115,6 @@ function Root() {
 		// Then check if deadline is set
 		if (!deadline) {
 			console.log('Opening DeadlineDialog - no deadline set');
-			setDefaultDeadline(calculateDefaultDeadline());
 			setIsDeadlineDialogOpen(true);
 			return;
 		}
@@ -150,7 +154,6 @@ function Root() {
 	const handleCancelDeadline = () => {
 		console.log('handleCancelDeadline called - this should NOT happen during normal save!', { isInSendChain, dialogSelectedCount });
 		setIsDeadlineDialogOpen(false);
-		setDefaultDeadline(""); // Clear default when canceling
 		// Only reset selection state if we're canceling during the send chain
 		if (isInSendChain) {
 			console.log('Setting isInSendChain = false (canceling deadline during chain)');
@@ -170,7 +173,6 @@ function Root() {
 		if (isInSendChain) {
 			if (!deadline) {
 				console.log('Continuing chain to DeadlineDialog');
-				setDefaultDeadline(calculateDefaultDeadline());
 				setIsDeadlineDialogOpen(true);
 			} else {
 				console.log('Continuing chain to SendDialog');
@@ -189,7 +191,6 @@ function Root() {
 		const wasInSendChain = isInSendChain; // Capture current state
 		
 		setDeadline(newDeadline);
-		setDefaultDeadline(""); // Clear default after saving
 		setIsDeadlineDialogOpen(false);
 		
 		// Use setTimeout to ensure state updates are processed first
@@ -209,7 +210,7 @@ function Root() {
 	const handleConfirmSend = () => {
 		const newPagedApplicants = pagedApplicants.map((page) =>
 			page.map((applicant) =>
-				dialogSelectedIds.includes(applicant.id)
+				dialogSelectedIds.includes(applicant.id) && !applicant.noEmail
 					? {
 							...applicant,
 							status: "Processing",
@@ -263,7 +264,7 @@ function Root() {
 				)}
 				{isDeadlineDialogOpen && (
 					<DeadlineDialog 
-						currentDeadline={deadline || defaultDeadline}
+						currentDeadline={deadline}
 						onClose={handleCancelDeadline}
 						onSave={handleSaveDeadline}
 					/>

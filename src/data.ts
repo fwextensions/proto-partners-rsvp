@@ -12,6 +12,7 @@ export interface Applicant {
   substatus?: string;
   status?: Status;
   hasAlternateContact?: boolean;
+  noEmail?: boolean;
 }
 
 const page1: Applicant[] = [
@@ -43,17 +44,17 @@ const page2: Applicant[] = [
   { id: 23, rank: "LW 3", applicationId: "APP-00474788", firstName: "Finn", lastName: "Patel", hh: 1, requests: "" },
   { id: 24, rank: "LW 4", applicationId: "APP-00474789", firstName: "Lyra", lastName: "Garcia", hh: 5, requests: "Hearing/Vision" },
   { id: 25, rank: "LW 5", applicationId: "APP-00474790", firstName: "Sienna", lastName: "Kim", hh: 3, requests: "", hasAlternateContact: true },
-  { id: 26, rank: "LW 6", applicationId: "APP-00474791", firstName: "Nia", lastName: "Chen", hh: 5, requests: "Hearing/Vision" },
+  { id: 26, rank: "LW 6", applicationId: "APP-00474791", firstName: "Nia", lastName: "Chen", hh: 5, requests: "Hearing/Vision", noEmail: true },
   { id: 27, rank: "LW 7", applicationId: "APP-00474792", firstName: "Jasper", lastName: "Ali", hh: 1, requests: "" },
-  { id: 28, rank: "LW 8", applicationId: "APP-00474793", firstName: "Kian", lastName: "Singh", hh: 3, requests: "", hasAlternateContact: true },
+  { id: 28, rank: "LW 8", applicationId: "APP-00474793", firstName: "Kian", lastName: "Singh", hh: 3, requests: "", hasAlternateContact: true, noEmail: true },
   { id: 29, rank: "LW 9", applicationId: "APP-00474794", firstName: "Theo", lastName: "Lopez", hh: 4, requests: "" },
   { id: 30, rank: "LW 10", applicationId: "APP-00474795", firstName: "Aria", lastName: "Zhang", hh: 2, requests: "", hasAlternateContact: true },
   { id: 31, rank: "LW 11", applicationId: "APP-00474796", firstName: "Dante", lastName: "Hernandez", hh: 4, requests: "" },
   { id: 32, rank: "LW 12", applicationId: "APP-00474797", firstName: "Mira", lastName: "Smith", hh: 3, requests: "Hearing/Vision", hasAlternateContact: true },
-  { id: 33, rank: "LW 13", applicationId: "APP-00474798", firstName: "Ronan", lastName: "Johnson", hh: 3, requests: "" },
+  { id: 33, rank: "LW 13", applicationId: "APP-00474798", firstName: "Ronan", lastName: "Johnson", hh: 3, requests: "", noEmail: true },
   { id: 34, rank: "LW 14", applicationId: "APP-00474799", firstName: "Zara", lastName: "Martinez", hh: 4, requests: "" },
   { id: 35, rank: "LW 15", applicationId: "APP-00474800", firstName: "Cleo", lastName: "Taylor", hh: 4, requests: "", hasAlternateContact: true },
-  { id: 36, rank: "LW 16", applicationId: "APP-00474801", firstName: "Ivy", lastName: "Jones", hh: 1, requests: "" },
+  { id: 36, rank: "LW 16", applicationId: "APP-00474801", firstName: "Ivy", lastName: "Jones", hh: 1, requests: "", noEmail: true },
   { id: 37, rank: "LW 17", applicationId: "APP-00474802", firstName: "Orion", lastName: "Brown", hh: 2, requests: "Vision", hasAlternateContact: true },
   { id: 38, rank: "LW 18", applicationId: "APP-00474803", firstName: "Luna", lastName: "Wilson", hh: 1, requests: "Hearing/Vision" },
   { id: 39, rank: "LW 19", applicationId: "APP-00474804", firstName: "Asher", lastName: "Williams", hh: 2, requests: "" },

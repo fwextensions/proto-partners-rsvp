@@ -23,7 +23,7 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	onEditUrl,
 	onEditDeadline,
 }) => {
-	const totalRecipients = selectedCount + alternateContactCount;
+	const totalRecipients = selectedCount + alternateContactCount - noEmailCount;
 
 	const isSendDisabled = !documentUrl || !deadline;
 
@@ -97,7 +97,7 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					<div>
 						<p className="font-semibold">Total recipients: {totalRecipients} people</p>
 						<ul className="list-disc list-inside pl-4 text-gray-600">
-							<li>{selectedCount} applicants</li>
+							<li>{selectedCount - noEmailCount} applicants</li>
 							<li>{alternateContactCount} have alternate contacts</li>
 						</ul>
 					</div>
@@ -105,7 +105,10 @@ const SendDialog: React.FC<SendDialogProps> = ({
 
 				{noEmailCount > 0 && (
 					<p className="text-sm text-gray-600 mb-8">
-						{noEmailCount} applicants do not have an email address. You will need to contact them separately. After you send this email, the applicant list will show who you still need to contact.
+						{noEmailCount === 1 
+							? "1 applicant does not have an email address. You will need to contact them separately. After you send this email, the applicant list will show who you still need to contact."
+							: `${noEmailCount} applicants do not have an email address. You will need to contact them separately. After you send this email, the applicant list will show who you still need to contact.`
+						}
 					</p>
 				)}
 
