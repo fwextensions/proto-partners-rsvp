@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-interface ConfirmationDialogProps {
+interface SendDialogProps {
 	onClose: () => void;
 	onConfirm: (url: string, deadline: string) => void;
 	selectedCount: number;
@@ -10,7 +10,7 @@ interface ConfirmationDialogProps {
 	noEmailCount: number;
 }
 
-const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({ 
+const SendDialog: React.FC<SendDialogProps> = ({ 
 	onClose, 
 	onConfirm, 
 	selectedCount, 
@@ -142,4 +142,4 @@ const ConfirmationDialog: React.FC<ConfirmationDialogProps> = ({
 	);
 };
 
-export default ConfirmationDialog;
+export default SendDialog;

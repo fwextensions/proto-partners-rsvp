@@ -9,7 +9,7 @@ import {
 	useParams,
 } from "react-router-dom";
 import { pagedApplicants as initialPagedApplicants, Applicant } from "./data";
-import ConfirmationDialog from "./components/ConfirmationDialog";
+import SendDialog from "./components/SendDialog";
 import ApplicantList from "./components/ApplicantList";
 import ApplicantDetails from "./components/ApplicantDetails";
 import ApplicantToolbar from "./components/ApplicantToolbar";
@@ -130,7 +130,7 @@ function Root() {
 				<Header />
 				<Outlet context={context} />
 				{isConfirmDialogOpen && (
-					<ConfirmationDialog 
+					<SendDialog 
 						onClose={handleCloseDialog} 
 						onConfirm={handleConfirmSend} 
 						selectedCount={dialogSelectedCount} 
