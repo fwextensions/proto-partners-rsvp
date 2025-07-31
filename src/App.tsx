@@ -37,6 +37,11 @@ function Root() {
 	const [dialogSelectedIds, setDialogSelectedIds] = useState<number[]>([]);
 	const [selectionKey, setSelectionKey] = useState(0);
 
+	// Hardcoded data based on the screenshot for now
+	const [documentUrl, setDocumentUrl] = useState("");
+	const [deadline, setDeadline] = useState("");
+	const [noEmailCount, setNoEmailCount] = useState(4);
+
 	const applicants = pagedApplicants[currentPage - 1] || [];
 
 	const handleNextPage = () => {
@@ -85,16 +90,19 @@ function Root() {
 		setIsConfirmDialogOpen(false);
 	};
 
-	const handleConfirmSend = () => {
+	const handleConfirmSend = (newUrl: string, newDeadline: string) => {
+		setDocumentUrl(newUrl);
+		setDeadline(newDeadline);
+
 		const newPagedApplicants = pagedApplicants.map((page) =>
 			page.map((applicant) =>
 				(dialogSelectedIds.includes(applicant.id)
 					? {
-						...applicant,
-						status: "Processing",
-						substatus: "📧 Invitation to apply sent",
-						updated: new Date().toLocaleDateString("en-US"),
-					}
+							...applicant,
+							status: "Processing",
+							substatus: "📧 Invitation to apply sent",
+							updated: new Date().toLocaleDateString("en-US"),
+					  }
 					: applicant) as Applicant,
 			)
 		);
@@ -122,7 +130,15 @@ function Root() {
 				<Header />
 				<Outlet context={context} />
 				{isConfirmDialogOpen && (
-					<ConfirmationDialog onClose={handleCloseDialog} onConfirm={handleConfirmSend} selectedCount={dialogSelectedCount} alternateContactCount={dialogAltContactCount} />
+					<ConfirmationDialog 
+						onClose={handleCloseDialog} 
+						onConfirm={handleConfirmSend} 
+						selectedCount={dialogSelectedCount} 
+						alternateContactCount={dialogAltContactCount}
+						documentUrl={documentUrl}
+						deadline={deadline}
+						noEmailCount={noEmailCount}
+					/>
 				)}
 			</div>
 		</SelectionProvider>
