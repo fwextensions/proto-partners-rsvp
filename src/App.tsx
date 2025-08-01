@@ -246,6 +246,8 @@ function Root() {
 		handlePageInputChange,
 		handleUpdateApplicantStatus,
 		handleOpenConfirm,
+		documentUrl,
+		deadline,
 	};
 
 	return (
@@ -327,7 +329,9 @@ function ApplicantListPage() {
 		handlePrevPage,
 		handlePageInputChange,
 		handleUpdateApplicantStatus,
-		handleOpenConfirm
+		handleOpenConfirm,
+		documentUrl,
+		deadline
 	} = useOutletContext<any>();
 
 	return (
@@ -338,7 +342,7 @@ function ApplicantListPage() {
 				<p className="text-gray-500">555 Bryant St, San Francisco, CA 94107</p>
 			</div>
 
-			<ApplicantToolbar applicants={applicants} onInvite={handleOpenConfirm} />
+			<ApplicantToolbar applicants={applicants} onInvite={handleOpenConfirm} documentUrl={documentUrl} deadline={deadline} />
 
 			<ApplicantList
 				applicants={applicants}

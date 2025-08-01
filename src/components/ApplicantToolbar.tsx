@@ -6,9 +6,11 @@ import { Applicant } from "../data";
 interface ApplicantToolbarProps {
 	applicants: Applicant[];
 	onInvite: (selectedIds: number[], alternateContactCount: number) => void;
+	documentUrl: string;
+	deadline: string;
 }
 
-const ApplicantToolbar: React.FC<ApplicantToolbarProps> = ({ applicants, onInvite }) => {
+const ApplicantToolbar: React.FC<ApplicantToolbarProps> = ({ applicants, onInvite, documentUrl, deadline }) => {
 	const { selectedIds, isAllSelected, handleSelectAll } = useSelectionContext();
 	const [isEmailDropdownOpen, setIsEmailDropdownOpen] = useState(false);
 
@@ -63,7 +65,7 @@ const ApplicantToolbar: React.FC<ApplicantToolbarProps> = ({ applicants, onInvit
 								}}
 								className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
 							>
-								Invite to apply
+								{!documentUrl || !deadline ? "Set up Invitation to Apply" : "Invite to apply"}
 							</a>
 						</DropdownMenu>
 					)}
