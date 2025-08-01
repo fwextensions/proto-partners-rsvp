@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { 
 	createBrowserRouter,
 	RouterProvider,
@@ -7,6 +7,7 @@ import {
 	ScrollRestoration,
 	useOutletContext,
 	useParams,
+	useLocation,
 } from "react-router-dom";
 import { pagedApplicants as initialPagedApplicants, Applicant } from "./data";
 import SendDialog from "./components/SendDialog";
@@ -17,6 +18,7 @@ import Header from "./components/Header";
 import UploadURLDialog from "./components/UploadURLDialog";
 import DeadlineDialog from "./components/DeadlineDialog";
 import SendExampleEmailDialog from "./components/SendExampleEmailDialog";
+import InlineNotification from "./components/InlineNotification";
 import { Status } from "./statuses";
 import { SelectionProvider } from "./contexts/SelectionContext";
 
@@ -46,6 +48,8 @@ function Root() {
 	const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
 	const [isExampleEmailDialogOpen, setIsExampleEmailDialogOpen] = useState(false);
 	const [isInSendChain, setIsInSendChain] = useState(false);
+	const [showNotification, setShowNotification] = useState(false);
+	const [notificationMessage, setNotificationMessage] = useState("");
 
 	const applicants = pagedApplicants[currentPage - 1] || [];
 
@@ -149,6 +153,10 @@ function Root() {
 		console.log('Sending example email to:', email);
 		// Don't close the dialog - let the component handle showing the sent state
 	};
+	
+	const handleCloseNotification = () => {
+		setShowNotification(false);
+	};
 
 	const handleCancelUploadURL = () => {
 		console.log('handleCancelUploadURL called - this should NOT happen during normal save!');
@@ -232,6 +240,24 @@ function Root() {
 					: applicant) as Applicant,
 		);
 		setPagedApplicants(newPagedApplicants);
+		
+		// Calculate message for notification (matching SendDialog calculation)
+		const totalRecipients = dialogSelectedCount + dialogAltContactCount - noEmailCount;
+		const applicantsWithEmail = dialogSelectedCount - noEmailCount;
+		const applicantsWithoutEmail = noEmailCount;
+		
+		let message = `Messages sent to ${applicantsWithEmail} applicant${applicantsWithEmail !== 1 ? 's' : ''}`;
+		if (dialogAltContactCount > 0) {
+			message += ` and ${dialogAltContactCount} alternate contact${dialogAltContactCount !== 1 ? 's' : ''}`;
+		}
+		if (applicantsWithoutEmail > 0) {
+			message += `. ${applicantsWithoutEmail} applicant${applicantsWithoutEmail > 1 ? 's' : ''} did not have email addresses`;
+		}
+		message += '.';
+		
+		setNotificationMessage(message);
+		setShowNotification(true);
+		
 		// clear selection by re-mounting provider
 		setSelectionKey((k) => k + 1);
 		setIsConfirmDialogOpen(false);
@@ -248,6 +274,9 @@ function Root() {
 		handleOpenConfirm,
 		documentUrl,
 		deadline,
+		showNotification,
+		notificationMessage,
+		handleCloseNotification,
 	};
 
 	return (
@@ -321,6 +350,7 @@ function App() {
 }
 
 function ApplicantListPage() {
+	const location = useLocation();
 	const { 
 		pagedApplicants,
 		currentPage,
@@ -331,8 +361,21 @@ function ApplicantListPage() {
 		handleUpdateApplicantStatus,
 		handleOpenConfirm,
 		documentUrl,
-		deadline
+		deadline,
+		showNotification,
+		notificationMessage,
+		handleCloseNotification
 	} = useOutletContext<any>();
+	
+	const prevPageRef = useRef(currentPage);
+
+	// Close notification when changing pages
+	useEffect(() => {
+		if (currentPage !== prevPageRef.current && showNotification) {
+			handleCloseNotification();
+		}
+		prevPageRef.current = currentPage;
+	}, [currentPage, showNotification, handleCloseNotification]);
 
 	return (
 		<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
@@ -341,6 +384,15 @@ function ApplicantListPage() {
 				<h2 className="text-3xl font-bold text-gray-800">QUINCY</h2>
 				<p className="text-gray-500">555 Bryant St, San Francisco, CA 94107</p>
 			</div>
+
+			{showNotification && (
+				<div className="mb-4">
+					<InlineNotification 
+						message={notificationMessage} 
+						onClose={handleCloseNotification} 
+					/>
+				</div>
+			)}
 
 			<ApplicantToolbar applicants={applicants} onInvite={handleOpenConfirm} documentUrl={documentUrl} deadline={deadline} />
 
@@ -363,9 +415,21 @@ function ApplicantListPage() {
 }
 
 function ApplicantDetailsPage() {
-	const { pagedApplicants, handleUpdateApplicantStatus } = useOutletContext<any>();
+	const { 
+		pagedApplicants, 
+		handleUpdateApplicantStatus,
+		showNotification,
+		handleCloseNotification 
+	} = useOutletContext<any>();
 	const { id } = useParams<{ id: string }>();
 	const applicant = findApplicantById(id, pagedApplicants);
+
+	// Close notification when entering applicant details page
+	useEffect(() => {
+		if (showNotification) {
+			handleCloseNotification();
+		}
+	}, []); // Only run once when component mounts
 
 	return (
 		<ApplicantDetails 
