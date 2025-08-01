@@ -16,6 +16,7 @@ import ApplicantToolbar from "./components/ApplicantToolbar";
 import Header from "./components/Header";
 import UploadURLDialog from "./components/UploadURLDialog";
 import DeadlineDialog from "./components/DeadlineDialog";
+import SendExampleEmailDialog from "./components/SendExampleEmailDialog";
 import { Status } from "./statuses";
 import { SelectionProvider } from "./contexts/SelectionContext";
 
@@ -43,6 +44,7 @@ function Root() {
 	const [noEmailCount, setNoEmailCount] = useState(4);
 	const [isUploadURLDialogOpen, setIsUploadURLDialogOpen] = useState(false);
 	const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
+	const [isExampleEmailDialogOpen, setIsExampleEmailDialogOpen] = useState(false);
 	const [isInSendChain, setIsInSendChain] = useState(false);
 
 	const applicants = pagedApplicants[currentPage - 1] || [];
@@ -136,6 +138,16 @@ function Root() {
 
 	const handleOpenDeadlineDialog = () => {
 		setIsDeadlineDialogOpen(true);
+	};
+
+	const handleOpenExampleEmailDialog = () => {
+		setIsExampleEmailDialogOpen(true);
+	};
+
+	const handleSendExampleEmail = (email: string) => {
+		// Here you would typically make an API call to send the example email
+		console.log('Sending example email to:', email);
+		// Don't close the dialog - let the component handle showing the sent state
 	};
 
 	const handleCancelUploadURL = () => {
@@ -253,6 +265,7 @@ function Root() {
 						noEmailCount={noEmailCount}
 						onEditUrl={handleOpenUploadURLDialog}
 						onEditDeadline={handleOpenDeadlineDialog}
+						onSendExampleEmail={handleOpenExampleEmailDialog}
 					/>
 				)}
 				{isUploadURLDialogOpen && (
@@ -267,6 +280,12 @@ function Root() {
 						currentDeadline={deadline}
 						onClose={handleCancelDeadline}
 						onSave={handleSaveDeadline}
+					/>
+				)}
+				{isExampleEmailDialogOpen && (
+					<SendExampleEmailDialog 
+						onClose={() => setIsExampleEmailDialogOpen(false)}
+						onSend={handleSendExampleEmail}
 					/>
 				)}
 			</div>

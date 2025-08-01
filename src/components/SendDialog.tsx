@@ -10,6 +10,7 @@ interface SendDialogProps {
 	noEmailCount: number;
 	onEditUrl: () => void;
 	onEditDeadline: () => void;
+	onSendExampleEmail: () => void;
 }
 
 const SendDialog: React.FC<SendDialogProps> = ({ 
@@ -22,6 +23,7 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	noEmailCount, 
 	onEditUrl,
 	onEditDeadline,
+	onSendExampleEmail,
 }) => {
 	const totalRecipients = selectedCount + alternateContactCount - noEmailCount;
 
@@ -77,7 +79,7 @@ const SendDialog: React.FC<SendDialogProps> = ({
 
 				<h2 className="text-xl font-semibold text-gray-800 mb-4">Send to selected applicants</h2>
 				<p className="text-sm text-gray-600 mb-6">
-					When you're ready, send an email to the applicants you selected. If you want, <a href="#" className="text-blue-600 underline">send yourself an example email</a> to preview what applicants will see.
+					When you're ready, send an email to the applicants you selected. If you want, <button onClick={onSendExampleEmail} className="text-blue-600 underline hover:text-blue-800 bg-transparent border-none cursor-pointer">send yourself an example email</button> to preview what applicants will see.
 				</p>
 
 				<div className="space-y-4 text-sm mb-6">
