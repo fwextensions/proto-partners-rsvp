@@ -8,6 +8,7 @@ import {
 	useOutletContext,
 	useParams,
 	useLocation,
+	useNavigate,
 } from "react-router-dom";
 import { pagedApplicants as initialPagedApplicants, Applicant } from "./data";
 import SendDialog from "./components/SendDialog";
@@ -19,6 +20,7 @@ import UploadURLDialog from "./components/UploadURLDialog";
 import DeadlineDialog from "./components/DeadlineDialog";
 import SendExampleEmailDialog from "./components/SendExampleEmailDialog";
 import InlineNotification from "./components/InlineNotification";
+import FeedbackPage from "./components/FeedbackPage";
 import { Status } from "./statuses";
 import { SelectionProvider } from "./contexts/SelectionContext";
 
@@ -35,12 +37,10 @@ const findApplicantById = (id: string | undefined, pagedApplicants: Applicant[][
 
 function Root() {
 	const [pagedApplicants, setPagedApplicants] = useState(initialPagedApplicants);
-	const [currentPage, setCurrentPage] = useState(1);
 	const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 	const [dialogSelectedCount, setDialogSelectedCount] = useState(0);
 	const [dialogAltContactCount, setDialogAltContactCount] = useState(0);
 	const [dialogSelectedIds, setDialogSelectedIds] = useState<number[]>([]);
-	const [selectionKey, setSelectionKey] = useState(0);
 	const [documentUrl, setDocumentUrl] = useState("");
 	const [deadline, setDeadline] = useState("");
 	const [noEmailCount, setNoEmailCount] = useState(4);
@@ -51,31 +51,7 @@ function Root() {
 	const [showNotification, setShowNotification] = useState(false);
 	const [notificationMessage, setNotificationMessage] = useState("");
 
-	const applicants = pagedApplicants[currentPage - 1] || [];
 
-	const handleNextPage = () => {
-		if (currentPage < pagedApplicants.length) {
-			setCurrentPage(currentPage + 1);
-		}
-	};
-
-	const handlePrevPage = () => {
-		if (currentPage > 1) {
-			setCurrentPage(currentPage - 1);
-		}
-	};
-
-	const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-		const value = e.target.value;
-		if (value === "") {
-			setCurrentPage(0);
-		} else {
-			const page = parseInt(value, 10);
-			if (page > 0 && page <= pagedApplicants.length) {
-				setCurrentPage(page);
-			}
-		}
-	};
 
 	const handleUpdateApplicantStatus = (applicantId: number, newStatus: Status) => {
 		const newPagedApplicants = pagedApplicants.map((page) =>
@@ -258,18 +234,11 @@ function Root() {
 		setNotificationMessage(message);
 		setShowNotification(true);
 		
-		// clear selection by re-mounting provider
-		setSelectionKey((k) => k + 1);
 		setIsConfirmDialogOpen(false);
 	};
 
 	const context = {
 		pagedApplicants,
-		currentPage,
-		applicants,
-		handleNextPage,
-		handlePrevPage,
-		handlePageInputChange,
 		handleUpdateApplicantStatus,
 		handleOpenConfirm,
 		documentUrl,
@@ -280,11 +249,10 @@ function Root() {
 	};
 
 	return (
-		<SelectionProvider key={selectionKey} items={applicants}>
+		<div className="font-sans bg-gray-50 min-h-screen">
+			<Header />
 			<ScrollRestoration />
-			<div className="font-sans bg-gray-50 min-h-screen">
-				<Header />
-				<Outlet context={context} />
+			<Outlet context={context} />
 				{isConfirmDialogOpen && (
 					<SendDialog 
 						onClose={handleCloseDialog} 
@@ -320,7 +288,6 @@ function Root() {
 					/>
 				)}
 			</div>
-		</SelectionProvider>
 	);
 }
 
@@ -331,6 +298,10 @@ const router = createBrowserRouter([
 		children: [
 			{
 				index: true,
+				element: <Navigate to="/page/1" replace />
+			},
+			{
+				path: "/page/:pageNumber",
 				element: <ApplicantListPage />
 			},
 			{
@@ -338,8 +309,12 @@ const router = createBrowserRouter([
 				element: <ApplicantDetailsPage />
 			},
 			{
+				path: "/feedback",
+				element: <FeedbackPage />
+			},
+			{
 				path: "*",
-				element: <Navigate to="/" replace />
+				element: <Navigate to="/page/1" replace />
 			}
 		]
 	}
@@ -351,13 +326,11 @@ function App() {
 
 function ApplicantListPage() {
 	const location = useLocation();
+	const navigate = useNavigate();
+	const { pageNumber } = useParams<{ pageNumber: string }>();
+	const currentPage = parseInt(pageNumber || '1', 10);
 	const { 
 		pagedApplicants,
-		currentPage,
-		applicants,
-		handleNextPage,
-		handlePrevPage,
-		handlePageInputChange,
 		handleUpdateApplicantStatus,
 		handleOpenConfirm,
 		documentUrl,
@@ -369,6 +342,34 @@ function ApplicantListPage() {
 	
 	const prevPageRef = useRef(currentPage);
 
+	// Get applicants for current page
+	const applicantsForPage = pagedApplicants[currentPage - 1] || [];
+
+	// Navigation handlers
+	const handleNextPage = () => {
+		if (currentPage < pagedApplicants.length) {
+			navigate(`/page/${currentPage + 1}`);
+		}
+	};
+
+	const handlePrevPage = () => {
+		if (currentPage > 1) {
+			navigate(`/page/${currentPage - 1}`);
+		}
+	};
+
+	const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const value = e.target.value;
+		if (value === "") {
+			return;
+		} else {
+			const page = parseInt(value, 10);
+			if (page > 0 && page <= pagedApplicants.length) {
+				navigate(`/page/${page}`);
+			}
+		}
+	};
+
 	// Close notification when changing pages
 	useEffect(() => {
 		if (currentPage !== prevPageRef.current && showNotification) {
@@ -378,7 +379,8 @@ function ApplicantListPage() {
 	}, [currentPage, showNotification, handleCloseNotification]);
 
 	return (
-		<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
+		<SelectionProvider key={`${location.pathname}-${Date.now()}`} items={applicantsForPage}>
+			<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
 			{showNotification && (
 				<div className="mb-4">
 					<InlineNotification 
@@ -388,10 +390,10 @@ function ApplicantListPage() {
 				</div>
 			)}
 
-			<ApplicantToolbar applicants={applicants} onInvite={handleOpenConfirm} documentUrl={documentUrl} deadline={deadline} />
+			<ApplicantToolbar applicants={applicantsForPage} onInvite={handleOpenConfirm} documentUrl={documentUrl} deadline={deadline} />
 
 			<ApplicantList
-				applicants={applicants}
+				applicants={applicantsForPage}
 				onUpdateApplicantStatus={handleUpdateApplicantStatus}
 			/>
 
@@ -404,7 +406,8 @@ function ApplicantListPage() {
 				</div>
 				<button className="px-4 py-2 border border-blue-500 text-white bg-blue-600 rounded-md disabled:opacity-50" onClick={handleNextPage} disabled={currentPage >= pagedApplicants.length}>NEXT</button>
 			</div>
-		</main>
+			</main>
+		</SelectionProvider>
 	);
 }
 

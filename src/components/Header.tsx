@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import DahliaLogo from "../assets/dahlia-logo.svg";
 
 interface NavItem {
@@ -34,9 +35,13 @@ const Header: React.FC = () => {
 							<p className="leading-[21px]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
 								Thanks for previewing new features.
 							</p>
-							<p className="text-[13px] leading-[19.5px] underline" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+							<Link 
+								to="/feedback"
+								className="text-[13px] leading-[19.5px] underline hover:opacity-80 transition-opacity" 
+								style={{ fontFamily: 'Open Sans, sans-serif' }}
+							>
 								We'd love to get your feedback.
-							</p>
+							</Link>
 						</div>
 					</div>
 				</div>
