@@ -1,4 +1,5 @@
 import React from "react";
+import DahliaLogo from "../assets/dahlia-logo.svg";
 
 interface NavItem {
 	label: string;
@@ -16,46 +17,126 @@ const navItems: NavItem[] = [
 
 const Header: React.FC = () => {
 	return (
-		<header className="bg-white shadow-sm">
-			<div className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem]">
-				<div className="flex justify-between items-center py-4">
-					<div className="flex items-center space-x-4">
-						<div className="bg-blue-600 p-3 rounded-md">
-							<svg
-								className="w-6 h-6 text-white"
-								fill="none"
-								stroke="currentColor"
-								viewBox="0 0 24 24"
-								xmlns="http://www.w3.org/2000/svg"
-							>
-								<path
-									strokeLinecap="round"
-									strokeLinejoin="round"
-									strokeWidth="2"
-									d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-								></path>
+		<header className="relative">
+			<div className="absolute left-[47px] top-0 w-[235px] h-[75px] z-10 bg-white shadow-[0_1px_2px_0px_rgba(0,0,0,0.25)]">
+				<img
+					src={DahliaLogo}
+					alt="DAHLIA PARTNERS Logo"
+					className="w-full h-full object-contain"
+				/>
+			</div>
+
+			{/* Feedback Bar */}
+			<div className="bg-[#0077da] w-full">
+				<div className="flex items-center justify-end px-4 py-4">
+					<div className="flex items-center gap-3">
+						<div className="flex items-start gap-2 text-white text-sm">
+							<p className="leading-[21px]" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+								Thanks for previewing new features.
+							</p>
+							<p className="text-[13px] leading-[19.5px] underline" style={{ fontFamily: 'Open Sans, sans-serif' }}>
+								We'd love to get your feedback.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Main Navigation */}
+			<div className="bg-white relative border-b border-[#dedee0]">
+				{/* Navigation content with left padding to avoid logo overlap */}
+				<div className="pl-[285px] pr-6 pt-5 pb-0">
+					<div className="flex items-start justify-between gap-[261px]">
+						{/* Navigation Items */}
+						<div className="flex items-start">
+							{navItems.map((item) => (
+								<div key={item.label} className="flex flex-col items-center">
+									<div className="px-6 py-0 flex items-center justify-center">
+										<p 
+											className="text-[13px] leading-[24px] text-[#222222] uppercase text-center"
+											style={{ fontFamily: 'Open Sans, sans-serif' }}
+										>
+											{item.label}
+										</p>
+									</div>
+									{item.isActive && (
+										<div className="w-full h-[2.066px] mt-4">
+											<div className="w-full h-full bg-[#0077da]"></div>
+										</div>
+									)}
+								</div>
+							))}
+						</div>
+
+						{/* Sign Out */}
+						<div className="flex flex-col items-center">
+							<div className="px-6 py-0 flex items-center justify-center">
+								<p 
+									className="text-[13px] leading-[24px] text-[#222222] uppercase text-center"
+									style={{ fontFamily: 'Open Sans, sans-serif' }}
+								>
+									SIGN OUT
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			{/* Breadcrumbs and Title Section */}
+			<div className="bg-neutral-50 px-12 py-6">
+				{/* Breadcrumbs */}
+				<div className="flex items-center gap-3 mb-6">
+					<p 
+						className="text-[12px] leading-[12px] tracking-[1px] text-[#0077da]"
+						style={{ fontFamily: 'Open Sans, sans-serif' }}
+					>
+						LEASE UPS
+					</p>
+					<div className="w-[4.438px] h-[8px] flex items-center justify-center">
+						<div className="rotate-[270deg]">
+							<svg className="w-2 h-[4.444px]" viewBox="0 0 8 4" fill="none">
+								<path d="M1 1L4 4L7 1" stroke="#222222" strokeWidth="1"/>
 							</svg>
 						</div>
-						<h1 className="text-xl font-semibold text-gray-800">DAHLIA PARTNERS</h1>
 					</div>
-					<nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-600">
-						{navItems.map((item) => (
-							<a
-								key={item.label}
-								href={item.href}
-								className={
-									item.isActive
-										? "text-blue-600 border-b-2 border-blue-600 pb-1"
-										: "hover:text-blue-600"
-								}
-							>
-								{item.label}
-							</a>
-						))}
-					</nav>
-					<a href="#" className="text-sm font-medium text-gray-600">
-						SIGN OUT
-					</a>
+					<p 
+						className="text-[12px] leading-[12px] tracking-[1px] text-[#222222]"
+						style={{ fontFamily: 'Open Sans, sans-serif' }}
+					>
+						QUINCY
+					</p>
+					<div className="w-[4.438px] h-[8px] flex items-center justify-center">
+						<div className="rotate-[270deg]">
+							<svg className="w-2 h-[4.444px]" viewBox="0 0 8 4" fill="none">
+								<path d="M1 1L4 4L7 1" stroke="#222222" strokeWidth="1"/>
+							</svg>
+						</div>
+					</div>
+					<p 
+						className="text-[12px] leading-[12px] tracking-[1px] text-[#222222]"
+						style={{ fontFamily: 'Open Sans, sans-serif' }}
+					>
+						APPLICANT LIST
+					</p>
+				</div>
+
+				{/* Title Section */}
+				<div className="flex items-end justify-between w-full">
+					<div className="w-[640px]">
+						<h1 
+							className="text-[26px] leading-[32px] tracking-[2.1667px] font-black text-[#222222] uppercase mb-2"
+							style={{ fontFamily: 'Lato, sans-serif' }}
+						>
+							QUINCY
+						</h1>
+						<p 
+							className="text-[16px] leading-[24px] text-[#222222] h-6"
+							style={{ fontFamily: 'Open Sans, sans-serif' }}
+						>
+							555 Bryant St, San Francisco, CA 94107
+						</p>
+					</div>
 				</div>
 			</div>
 		</header>

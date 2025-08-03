@@ -379,12 +379,6 @@ function ApplicantListPage() {
 
 	return (
 		<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
-			<div className="mb-6">
-				<p className="text-sm text-gray-500">Lease Ups &gt; Quincy &gt; Applicant list</p>
-				<h2 className="text-3xl font-bold text-gray-800">QUINCY</h2>
-				<p className="text-gray-500">555 Bryant St, San Francisco, CA 94107</p>
-			</div>
-
 			{showNotification && (
 				<div className="mb-4">
 					<InlineNotification 
