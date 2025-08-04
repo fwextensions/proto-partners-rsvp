@@ -262,9 +262,10 @@ function Root() {
 						documentUrl={documentUrl}
 						deadline={deadline}
 						noEmailCount={noEmailCount}
-						onEditUrl={handleOpenUploadURLDialog}
-						onEditDeadline={handleOpenDeadlineDialog}
-						onSendExampleEmail={handleOpenExampleEmailDialog}
+						onEditUrl={() => setIsUploadURLDialogOpen(true)}
+						onEditDeadline={() => setIsDeadlineDialogOpen(true)}
+						onUpdateDeadline={setDeadline}
+						onSendExampleEmail={() => setIsExampleEmailDialogOpen(true)}
 					/>
 				)}
 				{isUploadURLDialogOpen && (

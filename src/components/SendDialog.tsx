@@ -1,4 +1,5 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import DatePicker from "./DatePicker";
 
 interface SendDialogProps {
 	onClose: () => void;
@@ -10,6 +11,7 @@ interface SendDialogProps {
 	noEmailCount: number;
 	onEditUrl: () => void;
 	onEditDeadline: () => void;
+	onUpdateDeadline: (newDeadline: string) => void;
 	onSendExampleEmail: () => void;
 }
 
@@ -23,8 +25,10 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	noEmailCount, 
 	onEditUrl,
 	onEditDeadline,
+	onUpdateDeadline,
 	onSendExampleEmail,
 }) => {
+	const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 	const totalRecipients = selectedCount + alternateContactCount - noEmailCount;
 
 	const isSendDisabled = !documentUrl || !deadline;
@@ -52,6 +56,14 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	const handleConfirm = () => {
 		if (!isSendDisabled) {
 			onConfirm();
+		}
+	};
+
+	const handleEditDeadlineClick = (e: React.MouseEvent) => {
+		if (e.shiftKey) {
+			setIsDatePickerVisible(!isDatePickerVisible);
+		} else {
+			onEditDeadline();
 		}
 	};
 
@@ -92,8 +104,13 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					</div>
 					<div>
 						<p className="font-semibold">Deadline: 
-							<button onClick={onEditDeadline} className="text-blue-600 underline font-normal ml-2">Edit</button>
+							<button onClick={handleEditDeadlineClick} className="text-blue-600 underline font-normal ml-2">Edit</button>
 						</p>
+						{isDatePickerVisible && (
+							<div className="my-2">
+								<DatePicker onDateSelect={onUpdateDeadline} defaultDate={deadline} />
+							</div>
+						)}
 						<p>{formatDeadline(deadline)}</p>
 					</div>
 					<div>
