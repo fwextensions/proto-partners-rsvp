@@ -1,20 +1,23 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import ChevronLeftIcon from "./ChevronLeftIcon";
+import ChevronRightIcon from "./ChevronRightIcon";
 
-interface TimelineDatePickerProps {
+interface DatePickerProps {
 	daysCount?: number;
 	cellSize?: number;
 	gap?: number;
 	onDateSelect: (date: string) => void;
 	defaultDate?: string;
 }
+const ScrollButtonStyle = "p-0 disabled:opacity-50 enabled:hover:bg-gray-100 enabled:active:bg-gray-200 rounded text-gray-600";
 
-export default function TimelineDatePicker({ 
+export default function DatePicker({
 	daysCount = 30, 
 	cellSize = 64, 
 	gap = 8, 
 	onDateSelect, 
 	defaultDate,
-}: TimelineDatePickerProps) {
+}: DatePickerProps) {
 	const today = new Date();
 	const tomorrow = new Date(today);
 	tomorrow.setDate(today.getDate() + 1);
@@ -80,42 +83,47 @@ export default function TimelineDatePicker({
 	};
 
 	return (
-		<div className="flex items-center">
-			<button onClick={onLeft} disabled={selectedIndex <= 1} className="p-1 disabled:opacity-50">
-				◀
+		<div className="flex items-center my-2">
+			<button onClick={onLeft} disabled={selectedIndex <= 1} className={ScrollButtonStyle}>
+				<ChevronLeftIcon className="w-6 h-6" />
 			</button>
-			<button onClick={onRight} disabled={selectedIndex >= dates.current.length - 1} className="p-1 disabled:opacity-50">
-				▶
+			<button onClick={onRight} disabled={selectedIndex >= dates.current.length - 1} className={ScrollButtonStyle}>
+				<ChevronRightIcon className="w-6 h-6" />
 			</button>
 			<div
 				ref={containerRef}
-				className="flex overflow-x-auto scroll-snap-x mandatory"
+				className="flex overflow-x-auto scroll-snap-x mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
 				style={{ scrollPadding: `0 calc(50% - ${cellSize / 2}px)` }}
 			>
 				{dates.current.map((d, idx) => {
 					const isToday = idx === 0;
 					const isSelected = idx === selectedIndex;
 					const dayAndDate = `${d.toLocaleDateString(undefined, { weekday: "short" })} ${d.getDate()}`;
+					const isWeekend = d.getDay() % 6 == 0;
 
 					return (
 						<div
 							key={d.toISOString()}
 							onClick={() => !isToday && setSelectedIndex(idx)}
-							className={`
-								flex-shrink-0
-								w-[3.5rem] h-[3.5rem]
-								m-[${gap / 2}px]
-								flex flex-col items-center justify-evenly
-								scroll-snap-align-center
-								cursor-pointer
-								rounded
-								${isToday ? "text-gray-400" : ""}
-								${isSelected ? "bg-blue-600 text-white" : ""}
-								${!isToday && !isSelected ? "hover:bg-blue-100" : ""}
-							`}
+							className={[
+								"flex-shrink-0",
+								"w-[3.5rem] h-[3.5rem]",
+								`m-[${gap / 2}px]`,
+								"flex flex-col items-center justify-evenly",
+								"scroll-snap-align-center",
+								"cursor-pointer",
+								"rounded",
+								isToday ? "text-gray-400" : "",
+								isSelected ? "bg-blue-600 text-white" : "",
+								!isToday && !isSelected ? "hover:bg-blue-100" : "",
+							].filter(Boolean).join(" ")}
 						>
-							<div className="text-sm opacity-70">{isToday ? "Today" : dayAndDate}</div>
-							<div className="text-lg font-semibold pr-1">{isToday ? "" : `+${idx}`}</div>
+							<div className={`text-sm ${isWeekend ? "opacity-40" : "opacity-70"}`}>
+								{dayAndDate}
+							</div>
+							<div className={`${isToday ? "text-sm" : "text-lg"} font-semibold pr-1 ${isWeekend ? "opacity-50" : ""}`}>
+								{isToday ? "Today" : `+${idx}`}
+							</div>
 						</div>
 					);
 				})}
