@@ -81,6 +81,7 @@ export default function DatePicker({
 	const onRight = () => {
 		if (selectedIndex < dates.current.length - 1) setSelectedIndex((i) => i + 1);
 	};
+	let weekdayCount = 0;
 
 	return (
 		<div className="flex items-center my-2">
@@ -100,6 +101,11 @@ export default function DatePicker({
 					const isSelected = idx === selectedIndex;
 					const dayAndDate = `${d.toLocaleDateString(undefined, { weekday: "short" })} ${d.getDate()}`;
 					const isWeekend = d.getDay() % 6 == 0;
+
+						// update the running weekday total if needed, not counting today
+					if (idx && !isWeekend) {
+						weekdayCount += 1;
+					}
 
 					return (
 						<div
@@ -122,7 +128,7 @@ export default function DatePicker({
 								{dayAndDate}
 							</div>
 							<div className={`${isToday ? "text-sm" : "text-lg"} font-semibold pr-1 ${isWeekend ? "opacity-50" : ""}`}>
-								{isToday ? "Today" : `+${idx}`}
+								{isToday ? "Today" : (isWeekend ? <span>&nbsp;</span> : `+${weekdayCount}`)}
 							</div>
 						</div>
 					);

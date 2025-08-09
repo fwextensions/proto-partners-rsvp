@@ -64,14 +64,14 @@ function Root() {
 		setPagedApplicants(newPagedApplicants);
 	};
 
-	const calculateDefaultDeadline = () => {
-		const date = new Date();
-		date.setDate(date.getDate() + 5);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day} 11:59 PM`;
-	};
+//	const calculateDefaultDeadline = () => {
+//		const date = new Date();
+//		date.setDate(date.getDate() + 5);
+//		const year = date.getFullYear();
+//		const month = String(date.getMonth() + 1).padStart(2, '0');
+//		const day = String(date.getDate()).padStart(2, '0');
+//		return `${year}-${month}-${day} 11:59 PM`;
+//	};
 
 	const handleOpenConfirm = (selectedIds: number[], altCount: number) => {
 		console.log('handleOpenConfirm called:', { selectedCount: selectedIds.length, altCount, documentUrl, deadline });
@@ -112,17 +112,17 @@ function Root() {
 		setIsConfirmDialogOpen(false);
 	};
 
-	const handleOpenUploadURLDialog = () => {
-		setIsUploadURLDialogOpen(true);
-	};
-
-	const handleOpenDeadlineDialog = () => {
-		setIsDeadlineDialogOpen(true);
-	};
-
-	const handleOpenExampleEmailDialog = () => {
-		setIsExampleEmailDialogOpen(true);
-	};
+//	const handleOpenUploadURLDialog = () => {
+//		setIsUploadURLDialogOpen(true);
+//	};
+//
+//	const handleOpenDeadlineDialog = () => {
+//		setIsDeadlineDialogOpen(true);
+//	};
+//
+//	const handleOpenExampleEmailDialog = () => {
+//		setIsExampleEmailDialogOpen(true);
+//	};
 
 	const handleSendExampleEmail = (email: string) => {
 		// Here you would typically make an API call to send the example email
@@ -204,7 +204,7 @@ function Root() {
 	};
 
 	const handleConfirmSend = () => {
-		const newPagedApplicants = pagedApplicants.map((page) =>
+		const newPagedApplicants: Applicant[][] = pagedApplicants.map((page) =>
 			page.map((applicant) =>
 				dialogSelectedIds.includes(applicant.id) && !applicant.noEmail
 					? {
@@ -213,12 +213,12 @@ function Root() {
 							substatus: "📧 Invitation to apply sent",
 							updated: new Date().toLocaleDateString("en-US"),
 					  }
-					: applicant) as Applicant,
+					: applicant,
+			),
 		);
 		setPagedApplicants(newPagedApplicants);
 		
 		// Calculate message for notification (matching SendDialog calculation)
-		const totalRecipients = dialogSelectedCount + dialogAltContactCount - noEmailCount;
 		const applicantsWithEmail = dialogSelectedCount - noEmailCount;
 		const applicantsWithoutEmail = noEmailCount;
 		
