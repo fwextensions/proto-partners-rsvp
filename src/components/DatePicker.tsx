@@ -91,6 +91,14 @@ export default function DatePicker({
 		return null;
 	}, [items]);
 
+	const lastSelectableIndex = useMemo(() => {
+		for (let i = items.length - 1; i >= 0; i--) {
+			const item = items[i];
+			if (item.kind === "date") return i;
+		}
+		return -1;
+	}, [items]);
+
 	const findInitialIndex = useCallback(() => {
 		if (!defaultDate) {
 			return firstSelectableIndex > -1 ? firstSelectableIndex : 0;
@@ -138,10 +146,93 @@ export default function DatePicker({
 		const next = getNextSelectableIndex(selectedIndex);
 		if (next !== null) setSelectedIndex(next);
 	};
+
+	const moveByDays = useCallback((delta: number) => {
+		const current = items[selectedIndex];
+		if (!current || current.kind !== "date") {
+			const fallback = delta >= 0 ? firstSelectableIndex : lastSelectableIndex;
+			if (fallback > -1) setSelectedIndex(fallback);
+			return;
+		}
+		const baseDate = current.date;
+		const target = new Date(baseDate);
+		target.setDate(baseDate.getDate() + delta);
+
+		const firstIdx = firstSelectableIndex;
+		const lastIdx = lastSelectableIndex;
+		if (firstIdx === -1 || lastIdx === -1) return;
+
+		const firstDate = (items[firstIdx] as { kind: "date"; date: Date }).date;
+		const lastDate = (items[lastIdx] as { kind: "date"; date: Date }).date;
+
+		if (target <= firstDate) {
+			setSelectedIndex(firstIdx);
+			return;
+		}
+		if (target >= lastDate) {
+			setSelectedIndex(lastIdx);
+			return;
+		}
+
+		let idx = items.findIndex(it => it.kind === "date" && isSameYMD((it as { kind: "date"; date: Date }).date, target));
+		if (idx === -1) {
+			// fallback: walk toward target direction to find a date item
+			const step = delta >= 0 ? 1 : -1;
+			for (let i = selectedIndex + step; i >= 0 && i < items.length; i += step) {
+				const it = items[i];
+				if (it.kind === "date") { idx = i; break; }
+			}
+		}
+		if (idx !== -1) {
+			const it = items[idx] as { kind: "date"; date: Date };
+			if (isTodayDate(it.date)) {
+				const next = delta >= 0 ? getNextSelectableIndex(idx) : getPrevSelectableIndex(idx);
+				if (next !== null) {
+					setSelectedIndex(next);
+					return;
+				}
+			}
+			setSelectedIndex(idx);
+		}
+	}, [items, selectedIndex, firstSelectableIndex, lastSelectableIndex, getNextSelectableIndex, getPrevSelectableIndex]);
+
+	const onKeyDown = (e: any) => {
+		// handle arrow keys when picker has focus
+		if (e.key === "ArrowLeft") {
+			e.preventDefault();
+			onLeft();
+			return;
+		}
+		if (e.key === "ArrowRight") {
+			e.preventDefault();
+			onRight();
+			return;
+		}
+		if (e.key === "PageUp") {
+			e.preventDefault();
+			moveByDays(-7);
+			return;
+		}
+		if (e.key === "PageDown") {
+			e.preventDefault();
+			moveByDays(7);
+			return;
+		}
+		if (e.key === "Home") {
+			e.preventDefault();
+			if (firstSelectableIndex > -1) setSelectedIndex(firstSelectableIndex);
+			return;
+		}
+		if (e.key === "End") {
+			e.preventDefault();
+			if (lastSelectableIndex > -1) setSelectedIndex(lastSelectableIndex);
+			return;
+		}
+	};
 	let weekdayCount = 0;
 
 	return (
-		<div className="flex items-center my-2">
+		<div className="flex items-center my-2" onKeyDown={onKeyDown}>
 			<button onClick={onLeft} disabled={getPrevSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
 				<ChevronLeftIcon className="w-6 h-6" />
 			</button>
@@ -150,8 +241,9 @@ export default function DatePicker({
 			</button>
 			<div
 				ref={containerRef}
-				className="flex gap-[2px] overflow-x-auto scroll-snap-x mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+				className="flex gap-[2px] overflow-x-auto scroll-snap-x mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
 				style={{ scrollPadding: `0 calc(50% - ${cellSize / 2}px)` }}
+				tabIndex={0}
 			>
 				{items.map((item, idx) => {
 					if (item.kind === "divider") {
