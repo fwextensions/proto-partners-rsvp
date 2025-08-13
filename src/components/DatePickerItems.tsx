@@ -5,17 +5,20 @@ export type PickerItemBaseProps = {
 	className?: string;
 	onClick?: () => void;
 	children: any;
+	// optional passthrough attributes for aria/ids/roles etc
+	attrs?: Record<string, any>;
 };
 
-function PickerItemBase({ selected = false, selectedClass = "", className, onClick, children }: PickerItemBaseProps) {
+function PickerItemBase({ selected = false, selectedClass = "", className, onClick, children, attrs }: PickerItemBaseProps) {
 	return (
 		<div
 			onClick={onClick}
+			{...attrs}
 			className={[
 				"flex-shrink-0",
 				"w-[3.5rem] h-[3.5rem]",
 				"flex flex-col items-center justify-evenly",
-				"scroll-snap-align-center",
+				"snap-center",
 				selected ? selectedClass : "",
 				className,
 			].filter(Boolean).join(" ")}
@@ -33,6 +36,7 @@ export function PickerMonth({ label }: PickerMonthProps) {
 	return (
 		<PickerItemBase
 			className={["border-l-4 border-gray-200", "cursor-default select-none"].join(" ")}
+			attrs={{ role: "separator", "aria-hidden": true }}
 		>
 			<div className="text-sm">&nbsp;</div>
 			<div className="text-lg font-semibold text-gray-500">{label}</div>
@@ -47,9 +51,10 @@ export type PickerDayProps = {
 	dayAndDate: string;
 	weekdayCount: number;
 	onSelect: () => void;
+	id?: string;
 };
 
-export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCount, onSelect }: PickerDayProps) {
+export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCount, onSelect, id }: PickerDayProps) {
 	const containerClass = [
 		"rounded",
 		isToday ? "text-gray-400 cursor-default" : "cursor-pointer",
@@ -63,10 +68,11 @@ export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCou
 			selectedClass="bg-blue-600 text-white"
 			className={containerClass}
 			onClick={!isToday ? onSelect : undefined}
+			attrs={{ id, role: "option", "aria-selected": selected, "aria-disabled": isToday || undefined, tabIndex: -1 }}
 		>
 			<div className={`text-sm ${isWeekend ? "opacity-40" : "opacity-70"}`}>{dayAndDate}</div>
 			<div className={`text-lg font-semibold pr-1 ${isWeekend ? "opacity-50" : ""}`}>
-				{isToday ? <span className="text-sm">Today</span> : (isWeekend ? <span>&nbsp;</span> : `+${weekdayCount}`)}
+				{isToday ? <span className="text-sm">Today</span> : (isWeekend ? <span>&nbsp;</span> : `${weekdayCount}d`)}
 			</div>
 		</PickerItemBase>
 	);

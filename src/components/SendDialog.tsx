@@ -10,7 +10,6 @@ interface SendDialogProps {
 	deadline: string;
 	noEmailCount: number;
 	onEditUrl: () => void;
-	onEditDeadline: () => void;
 	onUpdateDeadline: (newDeadline: string) => void;
 	onSendExampleEmail: () => void;
 }
@@ -24,11 +23,9 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	deadline, 
 	noEmailCount, 
 	onEditUrl,
-	onEditDeadline,
 	onUpdateDeadline,
 	onSendExampleEmail,
 }) => {
-	const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
 	const totalRecipients = selectedCount + alternateContactCount - noEmailCount;
 
 	const isSendDisabled = !documentUrl || !deadline;
@@ -56,14 +53,6 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	const handleConfirm = () => {
 		if (!isSendDisabled) {
 			onConfirm();
-		}
-	};
-
-	const handleEditDeadlineClick = (e: React.MouseEvent) => {
-		if (e.shiftKey) {
-			setIsDatePickerVisible(!isDatePickerVisible);
-		} else {
-			onEditDeadline();
 		}
 	};
 
@@ -103,14 +92,10 @@ const SendDialog: React.FC<SendDialogProps> = ({
 						<p className="text-gray-600 break-all">{documentUrl || "Not set"}</p>
 					</div>
 					<div>
-						<p className="font-semibold">Deadline: 
-							<button onClick={handleEditDeadlineClick} className="text-blue-600 underline font-normal ml-2">Edit</button>
-						</p>
-						{isDatePickerVisible && (
-							<div className="my-2">
-								<DatePicker onDateSelect={onUpdateDeadline} defaultDate={deadline} />
-							</div>
-						)}
+						<p className="font-semibold">Deadline:</p>
+						<div className="my-2">
+							<DatePicker onDateSelect={onUpdateDeadline} defaultDate={deadline} />
+						</div>
 						<p>{formatDeadline(deadline)}</p>
 					</div>
 					<div>
@@ -135,8 +120,7 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					<button
 						onClick={handleConfirm}
 						disabled={isSendDisabled}
-						className="px-6 py-3 border border-transparent rounded-md font-semibold text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
-						style={{ backgroundColor: '#0077da' }}
+						className="px-6 py-3 border border-transparent rounded-md font-semibold text-white bg-[#0077da] hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 flex items-center gap-2 disabled:bg-gray-400 disabled:cursor-not-allowed"
 					>
 						<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 							<path d="M1.33301 1.33301L14.6663 8.66634L1.33301 15.9997V9.99967L10.6663 8.66634L1.33301 7.33301V1.33301Z" fill="white"/>

@@ -34,7 +34,6 @@ const ScrollButtonStyle = "p-0 disabled:opacity-50 enabled:hover:bg-gray-100 ena
 
 export default function DatePicker({
 	daysCount = 30, 
-	cellSize = 64, 
 	onDateSelect,
 	defaultDate,
 }: DatePickerProps) {
@@ -101,30 +100,34 @@ export default function DatePicker({
 
 	const findInitialIndex = useCallback(() => {
 		if (!defaultDate) {
-			return firstSelectableIndex > -1 ? firstSelectableIndex : 0;
+			return -1; // No selection by default
 		}
-		const defaultDateObj = new Date(defaultDate.split(" ")[0]);
+		// Parse date components manually to avoid timezone issues
+		const datePart = defaultDate.split(" ")[0];
+		const [year, month, day] = datePart.split("-").map(Number);
+		const defaultDateObj = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+		
 		let index = items.findIndex(item => item.kind === "date" && isSameYMD(item.date, defaultDateObj));
 		if (index === -1 || (items[index] as DateItem).kind === "date" && isTodayDate((items[index] as DateItem).date)) {
-			index = firstSelectableIndex;
+			return -1; // No selection if default date is invalid or today
 		}
-		return index > -1 ? index : 0;
-	}, [defaultDate, items, firstSelectableIndex, isSameYMD, isTodayDate]);
+		return index > -1 ? index : -1;
+	}, [defaultDate, items, isSameYMD, isTodayDate]);
 
 	const [selectedIndex, setSelectedIndex] = useState(findInitialIndex);
 
 	useEffect(() => {
-		if (containerRef.current) {
+		if (containerRef.current && selectedIndex >= 0) {
 			const el = containerRef.current.children[selectedIndex];
 			if (el && "scrollIntoView" in el) {
-				el.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+				el.scrollIntoView();
 			}
 		}
 	}, [selectedIndex]);
 
 	useEffect(() => {
 		const item = items[selectedIndex];
-		if (item && item.kind === "date" && onDateSelect) {
+		if (item && item.kind === "date" && onDateSelect && selectedIndex >= 0) {
 			const selectedDate = item.date;
 			const year = selectedDate.getFullYear();
 			const month = selectedDate.getMonth() + 1;
@@ -139,15 +142,30 @@ export default function DatePicker({
 	}, [selectedIndex, onDateSelect, items]);
 
 	const onLeft = () => {
+		if (selectedIndex === -1) {
+			// Start from first selectable when no selection
+			if (firstSelectableIndex > -1) setSelectedIndex(firstSelectableIndex);
+			return;
+		}
 		const prev = getPrevSelectableIndex(selectedIndex);
 		if (prev !== null) setSelectedIndex(prev);
 	};
 	const onRight = () => {
+		if (selectedIndex === -1) {
+			// Start from first selectable when no selection
+			if (firstSelectableIndex > -1) setSelectedIndex(firstSelectableIndex);
+			return;
+		}
 		const next = getNextSelectableIndex(selectedIndex);
 		if (next !== null) setSelectedIndex(next);
 	};
 
 	const moveByDays = useCallback((delta: number) => {
+		if (selectedIndex === -1) {
+			// Start from first selectable when no selection
+			if (firstSelectableIndex > -1) setSelectedIndex(firstSelectableIndex);
+			return;
+		}
 		const current = items[selectedIndex];
 		if (!current || current.kind !== "date") {
 			const fallback = delta >= 0 ? firstSelectableIndex : lastSelectableIndex;
@@ -233,16 +251,15 @@ export default function DatePicker({
 
 	return (
 		<div className="flex items-center my-2" onKeyDown={onKeyDown}>
-			<button onClick={onLeft} disabled={getPrevSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
+			<button onClick={onLeft} disabled={selectedIndex !== -1 && getPrevSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
 				<ChevronLeftIcon className="w-6 h-6" />
 			</button>
-			<button onClick={onRight} disabled={getNextSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
+			<button onClick={onRight} disabled={selectedIndex !== -1 && getNextSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
 				<ChevronRightIcon className="w-6 h-6" />
 			</button>
 			<div
 				ref={containerRef}
-				className="flex gap-[2px] overflow-x-auto scroll-snap-x mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-				style={{ scrollPadding: `0 calc(50% - ${cellSize / 2}px)` }}
+				className="flex gap-[2px] overflow-x-auto snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
 				tabIndex={0}
 			>
 				{items.map((item, idx) => {

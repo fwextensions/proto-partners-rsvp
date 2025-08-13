@@ -95,14 +95,14 @@ function Root() {
 		}
 		
 		// Then check if deadline is set
-		if (!deadline) {
-			console.log('Opening DeadlineDialog - no deadline set');
-			setIsDeadlineDialogOpen(true);
-			return;
-		}
+		// if (!deadline) {
+		// 	console.log('Opening DeadlineDialog - no deadline set');
+		// 	setIsDeadlineDialogOpen(true);
+		// 	return;
+		// }
 		
 		// Both are set, show send dialog
-		console.log('Opening SendDialog immediately - both URL and deadline set');
+		console.log('Opening SendDialog immediately - URL set, skipping deadline dialog');
 		console.log('Setting isInSendChain = false (exiting chain - immediate send)');
 		setIsInSendChain(false); // Exit send chain
 		setIsConfirmDialogOpen(true);
@@ -165,18 +165,13 @@ function Root() {
 		setDocumentUrl(url);
 		setIsUploadURLDialogOpen(false);
 		
-		// Continue the chain: check if deadline is set
+		// Continue the chain: skip deadline check and go straight to SendDialog
 		if (isInSendChain) {
-			if (!deadline) {
-				console.log('Continuing chain to DeadlineDialog');
-				setIsDeadlineDialogOpen(true);
-			} else {
-				console.log('Continuing chain to SendDialog');
-				// Both URL and deadline are now set, show send dialog
-				console.log('Setting isInSendChain = false (exiting chain - URL save to send)');
-				setIsInSendChain(false); // Exit send chain
-				setIsConfirmDialogOpen(true);
-			}
+			console.log('Continuing chain to SendDialog, skipping deadline dialog');
+			// Both URL and deadline are now set, show send dialog
+			console.log('Setting isInSendChain = false (exiting chain - URL save to send)');
+			setIsInSendChain(false); // Exit send chain
+			setIsConfirmDialogOpen(true);
 		} else {
 			console.log('Not in send chain after URL save');
 		}
