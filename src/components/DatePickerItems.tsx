@@ -77,7 +77,10 @@ export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCou
 					? <span className="text-sm">Today</span>
 					: (isWeekend
 						? <span>&nbsp;</span>
-						: <><span className="font-semibold pr-[.15em]">{weekdayCount}</span><span className="opacity-50">days</span></>)}
+						: <>
+								<span className="font-semibold pr-[.15em]">{weekdayCount}</span>
+								<span className="opacity-50">{`day${weekdayCount > 1 ? "s" : ""}`}</span>
+							</>)}
 			</div>
 		</PickerItemBase>
 	);
