@@ -60,6 +60,7 @@ export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCou
 		isToday ? "text-gray-400 cursor-default" : "cursor-pointer",
 		selected ? "" : "",
 		!isToday && !selected ? "hover:bg-blue-100" : "",
+		"outline-none"
 	].filter(Boolean).join(" ");
 
 	return (
@@ -71,8 +72,12 @@ export function PickerDay({ isToday, isWeekend, selected, dayAndDate, weekdayCou
 			attrs={{ id, role: "option", "aria-selected": selected, "aria-disabled": isToday || undefined, tabIndex: -1 }}
 		>
 			<div className={`text-sm ${isWeekend ? "opacity-40" : "opacity-70"}`}>{dayAndDate}</div>
-			<div className={`text-lg font-semibold pr-1 ${isWeekend ? "opacity-50" : ""}`}>
-				{isToday ? <span className="text-sm">Today</span> : (isWeekend ? <span>&nbsp;</span> : `${weekdayCount}d`)}
+			<div className={`${isWeekend ? "opacity-50" : ""}`}>
+				{isToday
+					? <span className="text-sm">Today</span>
+					: (isWeekend
+						? <span>&nbsp;</span>
+						: <><span className="font-semibold pr-[.15em]">{weekdayCount}</span><span className="opacity-50">days</span></>)}
 			</div>
 		</PickerItemBase>
 	);

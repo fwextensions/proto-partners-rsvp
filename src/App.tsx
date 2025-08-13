@@ -258,7 +258,7 @@ function Root() {
 						deadline={deadline}
 						noEmailCount={noEmailCount}
 						onEditUrl={() => setIsUploadURLDialogOpen(true)}
-						onEditDeadline={() => setIsDeadlineDialogOpen(true)}
+//						onEditDeadline={() => setIsDeadlineDialogOpen(true)}
 						onUpdateDeadline={setDeadline}
 						onSendExampleEmail={() => setIsExampleEmailDialogOpen(true)}
 					/>
