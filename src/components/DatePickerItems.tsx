@@ -18,7 +18,7 @@ function PickerItemBase({ selected = false, selectedClass = "", className, onCli
 				"flex-shrink-0",
 				"w-[3.5rem] h-[3.5rem]",
 				"flex flex-col items-center justify-evenly",
-				"snap-center",
+				"snap-start",
 				selected ? selectedClass : "",
 				className,
 			].filter(Boolean).join(" ")}

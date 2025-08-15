@@ -120,7 +120,7 @@ export default function DatePicker({
 		if (containerRef.current && selectedIndex >= 0) {
 			const el = containerRef.current.children[selectedIndex];
 			if (el && "scrollIntoView" in el) {
-				el.scrollIntoView();
+				el.scrollIntoView({ inline: "nearest" });
 			}
 		}
 	}, [selectedIndex]);
@@ -251,11 +251,8 @@ export default function DatePicker({
 
 	return (
 		<div className="flex items-center my-2" onKeyDown={onKeyDown}>
-			<button onClick={onLeft} disabled={selectedIndex !== -1 && getPrevSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
+			<button onClick={onLeft} disabled={selectedIndex === -1 || getPrevSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
 				<ChevronLeftIcon className="w-6 h-6" />
-			</button>
-			<button onClick={onRight} disabled={selectedIndex !== -1 && getNextSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
-				<ChevronRightIcon className="w-6 h-6" />
 			</button>
 			<div
 				ref={containerRef}
@@ -298,6 +295,9 @@ export default function DatePicker({
 					);
 				})}
 			</div>
+			<button onClick={onRight} disabled={selectedIndex !== -1 && getNextSelectableIndex(selectedIndex) === null} className={ScrollButtonStyle}>
+				<ChevronRightIcon className="w-6 h-6" />
+			</button>
 		</div>
 	);
 }

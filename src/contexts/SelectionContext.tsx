@@ -6,7 +6,7 @@ type ItemWithId = { id: number };
 
 interface SelectionProviderProps<T extends ItemWithId> {
 	items: T[];
-	children: React.ReactNode;
+	children: React.ReactNode | ((selectionResult: UseSelectionResult) => React.ReactNode);
 }
 
 // create context with undefined default so we can throw if used outside provider
@@ -15,7 +15,11 @@ const SelectionContext = createContext<UseSelectionResult | undefined>(undefined
 export function SelectionProvider<T extends ItemWithId>({ items, children }: SelectionProviderProps<T>) {
 	// reuse existing hook for the heavy lifting
 	const selection = useSelection(items);
-	return <SelectionContext.Provider value={selection}>{children}</SelectionContext.Provider>;
+	return (
+		<SelectionContext.Provider value={selection}>
+			{typeof children === 'function' ? children(selection) : children}
+		</SelectionContext.Provider>
+	);
 }
 
 // consumer hook that components will import instead of calling useSelection directly

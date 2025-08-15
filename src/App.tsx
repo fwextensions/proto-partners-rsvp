@@ -50,8 +50,7 @@ function Root() {
 	const [isInSendChain, setIsInSendChain] = useState(false);
 	const [showNotification, setShowNotification] = useState(false);
 	const [notificationMessage, setNotificationMessage] = useState("");
-
-
+	const [clearSelectionFn, setClearSelectionFn] = useState<() => void>(() => {});
 
 	const handleUpdateApplicantStatus = (applicantId: number, newStatus: Status) => {
 		const newPagedApplicants = pagedApplicants.map((page) =>
@@ -73,11 +72,14 @@ function Root() {
 //		return `${year}-${month}-${day} 11:59 PM`;
 //	};
 
-	const handleOpenConfirm = (selectedIds: number[], altCount: number) => {
+	const handleOpenConfirm = (selectedIds: number[], altCount: number, clearSelectionFn: () => void) => {
 		console.log('handleOpenConfirm called:', { selectedCount: selectedIds.length, altCount, documentUrl, deadline });
 		setDialogSelectedIds(selectedIds);
 		setDialogSelectedCount(selectedIds.length);
 		setDialogAltContactCount(altCount);
+		
+		// Store the clearSelection function for use after successful send
+		setClearSelectionFn(() => clearSelectionFn);
 		
 		// Calculate how many selected applicants have no email
 		const selectedApplicants = pagedApplicants.flat().filter(applicant => selectedIds.includes(applicant.id));
@@ -230,6 +232,7 @@ function Root() {
 		setShowNotification(true);
 		
 		setIsConfirmDialogOpen(false);
+		clearSelectionFn(); // Call the stored clearSelection function
 	};
 
 	const context = {
@@ -241,6 +244,7 @@ function Root() {
 		showNotification,
 		notificationMessage,
 		handleCloseNotification,
+		clearSelection: () => {}, // Will be overridden by SelectionProvider
 	};
 
 	return (
@@ -375,34 +379,36 @@ function ApplicantListPage() {
 	}, [currentPage, showNotification, handleCloseNotification]);
 
 	return (
-		<SelectionProvider key={`${location.pathname}-${Date.now()}`} items={applicantsForPage}>
-			<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
-			{showNotification && (
-				<div className="mb-4">
-					<InlineNotification 
-						message={notificationMessage} 
-						onClose={handleCloseNotification} 
-					/>
+		<SelectionProvider key={location.pathname} items={applicantsForPage}>
+			{({ clearSelection }) => (
+				<main className="max-w-[100rem] mx-auto px-4 sm:px-6 lg:px-[4rem] py-8">
+				{showNotification && (
+					<div className="mb-4">
+						<InlineNotification 
+							message={notificationMessage} 
+							onClose={handleCloseNotification} 
+						/>
+					</div>
+				)}
+
+				<ApplicantToolbar applicants={applicantsForPage} onInvite={(selectedIds, altCount) => handleOpenConfirm(selectedIds, altCount, clearSelection)} documentUrl={documentUrl} deadline={deadline} />
+
+				<ApplicantList
+					applicants={applicantsForPage}
+					onUpdateApplicantStatus={handleUpdateApplicantStatus}
+				/>
+
+				<div className="flex justify-between items-center mt-4">
+					<button className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 disabled:opacity-50" onClick={handlePrevPage} disabled={currentPage <= 1}>PREVIOUS</button>
+					<div>
+						Page
+						<input type="text" value={currentPage > 0 ? currentPage : ""} onChange={handlePageInputChange} className="w-12 text-center border-gray-300 rounded-md" />
+						of {pagedApplicants.length}
+					</div>
+					<button className="px-4 py-2 border border-blue-500 text-white bg-blue-600 rounded-md disabled:opacity-50" onClick={handleNextPage} disabled={currentPage >= pagedApplicants.length}>NEXT</button>
 				</div>
+				</main>
 			)}
-
-			<ApplicantToolbar applicants={applicantsForPage} onInvite={handleOpenConfirm} documentUrl={documentUrl} deadline={deadline} />
-
-			<ApplicantList
-				applicants={applicantsForPage}
-				onUpdateApplicantStatus={handleUpdateApplicantStatus}
-			/>
-
-			<div className="flex justify-between items-center mt-4">
-				<button className="px-4 py-2 border border-gray-300 rounded-md bg-white text-gray-700 disabled:opacity-50" onClick={handlePrevPage} disabled={currentPage <= 1}>PREVIOUS</button>
-				<div>
-					Page
-					<input type="text" value={currentPage > 0 ? currentPage : ""} onChange={handlePageInputChange} className="w-12 text-center border-gray-300 rounded-md" />
-					of {pagedApplicants.length}
-				</div>
-				<button className="px-4 py-2 border border-blue-500 text-white bg-blue-600 rounded-md disabled:opacity-50" onClick={handleNextPage} disabled={currentPage >= pagedApplicants.length}>NEXT</button>
-			</div>
-			</main>
 		</SelectionProvider>
 	);
 }

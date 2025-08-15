@@ -26,8 +26,6 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	onUpdateDeadline,
 	onSendExampleEmail,
 }) => {
-	const totalRecipients = selectedCount + alternateContactCount - noEmailCount;
-
 	const isSendDisabled = !documentUrl || !deadline;
 
 	const formatDeadline = (deadlineStr: string) => {
@@ -71,7 +69,8 @@ const SendDialog: React.FC<SendDialogProps> = ({
 
 	return (
 		<div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex items-center justify-center" onClick={onClose}>
-			<div className="bg-white rounded-lg shadow-xl w-full max-w-lg relative flex flex-col p-8" onClick={(e) => e.stopPropagation()}>
+			<div className="bg-white rounded-lg shadow-xl w-full max-w-[36rem] relative flex flex-col p-8" onClick={(e) => e.stopPropagation()}>
+			{/*<div className="bg-white rounded-lg shadow-xl w-full max-w-lg relative flex flex-col p-8" onClick={(e) => e.stopPropagation()}>*/}
 				<button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
 					<svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
 						<path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -99,10 +98,10 @@ const SendDialog: React.FC<SendDialogProps> = ({
 						<p>{formatDeadline(deadline)}</p>
 					</div>
 					<div>
-						<p className="font-semibold">Total recipients: {totalRecipients} people</p>
+						<p className="font-semibold">Selected recipients:</p>
 						<ul className="list-disc list-inside pl-4 text-gray-600">
-							<li>{selectedCount - noEmailCount} applicants</li>
-							<li>{alternateContactCount} have alternate contacts</li>
+							<li className="font-semibold text-gray-600">{selectedCount - noEmailCount} applicants</li>
+							<li>{alternateContactCount} alternate contacts</li>
 						</ul>
 					</div>
 				</div>
