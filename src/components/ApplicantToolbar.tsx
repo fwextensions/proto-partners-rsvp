@@ -65,7 +65,7 @@ const ApplicantToolbar: React.FC<ApplicantToolbarProps> = ({ applicants, onInvit
 								}}
 								className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
 							>
-								{!documentUrl || !deadline ? "Set up Invitation to Apply" : "Invite to apply"}
+								Invite to Apply
 							</a>
 						</DropdownMenu>
 					)}

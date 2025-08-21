@@ -12,6 +12,7 @@ interface SendDialogProps {
 	onEditUrl: () => void;
 	onUpdateDeadline: (newDeadline: string) => void;
 	onSendExampleEmail: () => void;
+	useIndividualUrls?: boolean;
 }
 
 const SendDialog: React.FC<SendDialogProps> = ({ 
@@ -25,8 +26,9 @@ const SendDialog: React.FC<SendDialogProps> = ({
 	onEditUrl,
 	onUpdateDeadline,
 	onSendExampleEmail,
+	useIndividualUrls = false,
 }) => {
-	const isSendDisabled = !documentUrl || !deadline;
+	const isSendDisabled = useIndividualUrls ? !deadline : (!documentUrl || !deadline);
 
 	const formatDeadline = (deadlineStr: string) => {
 		if (!deadlineStr) return "Not set";
@@ -86,9 +88,11 @@ const SendDialog: React.FC<SendDialogProps> = ({
 					<p><span className="font-semibold">You are sending:</span> Invitation to Apply</p>
 					<div>
 						<p className="font-semibold">Document upload URL: 
-							<button onClick={onEditUrl} className="text-blue-600 underline font-normal ml-2">Edit</button>
+							{!useIndividualUrls && <button onClick={onEditUrl} className="text-blue-600 underline font-normal ml-2">Edit</button>}
 						</p>
-						<p className="text-gray-600 break-all">{documentUrl || "Not set"}</p>
+						<p className="text-gray-600 break-all">
+							{useIndividualUrls ? "Individual URLs assigned to each applicant" : (documentUrl || "Not set")}
+						</p>
 					</div>
 					<div>
 						<p className="font-semibold">Deadline:</p>

@@ -287,6 +287,7 @@ function Root() {
 //						onEditDeadline={() => setIsDeadlineDialogOpen(true)}
 						onUpdateDeadline={setDeadline}
 						onSendExampleEmail={() => setIsExampleEmailDialogOpen(true)}
+						useIndividualUrls={true}
 					/>
 				)}
 				{isUploadURLDialogOpen && (
