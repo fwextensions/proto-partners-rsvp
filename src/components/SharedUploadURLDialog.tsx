@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 
-interface UploadURLDialogProps {
+interface SharedUploadURLDialogProps {
 	onClose: () => void;
 	onSave: (url: string) => void;
 	currentUrl: string;
 }
 
-const UploadURLDialog: React.FC<UploadURLDialogProps> = ({ onClose, onSave, currentUrl }) => {
+const SharedUploadURLDialog: React.FC<SharedUploadURLDialogProps> = ({ onClose, onSave, currentUrl }) => {
 	const [url, setUrl] = useState(currentUrl);
 
 	const handleSave = () => {
@@ -70,4 +70,4 @@ const UploadURLDialog: React.FC<UploadURLDialogProps> = ({ onClose, onSave, curr
 	);
 }
 
-export default UploadURLDialog;
+export default SharedUploadURLDialog;

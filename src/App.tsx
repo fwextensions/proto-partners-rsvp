@@ -16,7 +16,8 @@ import ApplicantList from "./components/ApplicantList";
 import ApplicantDetails from "./components/ApplicantDetails";
 import ApplicantToolbar from "./components/ApplicantToolbar";
 import Header from "./components/Header";
-import UploadURLDialog from "./components/UploadURLDialog";
+import SharedUploadURLDialog from "./components/SharedUploadURLDialog";
+import UploadURLsDialog from "./components/UploadURLsDialog";
 import DeadlineDialog from "./components/DeadlineDialog";
 import SendExampleEmailDialog from "./components/SendExampleEmailDialog";
 import InlineNotification from "./components/InlineNotification";
@@ -45,6 +46,7 @@ function Root() {
 	const [deadline, setDeadline] = useState("");
 	const [noEmailCount, setNoEmailCount] = useState(4);
 	const [isUploadURLDialogOpen, setIsUploadURLDialogOpen] = useState(false);
+	const [isUploadURLsDialogOpen, setIsUploadURLsDialogOpen] = useState(false);
 	const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
 	const [isExampleEmailDialogOpen, setIsExampleEmailDialogOpen] = useState(false);
 	const [isInSendChain, setIsInSendChain] = useState(false);
@@ -89,25 +91,9 @@ function Root() {
 		console.log('Setting isInSendChain = true (starting chain)');
 		setIsInSendChain(true); // Mark that we're in the send chain
 		
-		// Check if upload URL is set first
-		if (!documentUrl) {
-			console.log('Opening UploadURLDialog - no URL set');
-			setIsUploadURLDialogOpen(true);
-			return;
-		}
-		
-		// Then check if deadline is set
-		// if (!deadline) {
-		// 	console.log('Opening DeadlineDialog - no deadline set');
-		// 	setIsDeadlineDialogOpen(true);
-		// 	return;
-		// }
-		
-		// Both are set, show send dialog
-		console.log('Opening SendDialog immediately - URL set, skipping deadline dialog');
-		console.log('Setting isInSendChain = false (exiting chain - immediate send)');
-		setIsInSendChain(false); // Exit send chain
-		setIsConfirmDialogOpen(true);
+		// Show the individual upload URLs dialog first
+		console.log('Opening UploadURLsDialog first');
+		setIsUploadURLsDialogOpen(true);
 	};
 
 	const handleCloseDialog = () => {
@@ -134,6 +120,42 @@ function Root() {
 	
 	const handleCloseNotification = () => {
 		setShowNotification(false);
+	};
+
+	const handleCancelUploadURLs = () => {
+		console.log('handleCancelUploadURLs called');
+		setIsUploadURLsDialogOpen(false);
+		// Reset selection state when canceling
+		if (isInSendChain) {
+			console.log('Setting isInSendChain = false (canceling upload URLs during chain)');
+			setDialogSelectedIds([]);
+			setDialogSelectedCount(0);
+			setDialogAltContactCount(0);
+			setIsInSendChain(false);
+		}
+	};
+
+	const handleSaveUploadURLs = (urlMappings: { [applicantId: number]: string }) => {
+		console.log('handleSaveUploadURLs called:', urlMappings);
+		
+		// Update applicant records with new URLs
+		const newPagedApplicants = pagedApplicants.map((page) =>
+			page.map((applicant) => ({
+				...applicant,
+				uploadUrl: urlMappings[applicant.id] || applicant.uploadUrl
+			}))
+		);
+		setPagedApplicants(newPagedApplicants);
+		
+		setIsUploadURLsDialogOpen(false);
+		
+		// Continue the chain: proceed to SendDialog
+		if (isInSendChain) {
+			console.log('Continuing chain to SendDialog');
+			console.log('Setting isInSendChain = false (exiting chain - URLs saved to send)');
+			setIsInSendChain(false); // Exit send chain
+			setIsConfirmDialogOpen(true);
+		}
 	};
 
 	const handleCancelUploadURL = () => {
@@ -268,7 +290,7 @@ function Root() {
 					/>
 				)}
 				{isUploadURLDialogOpen && (
-					<UploadURLDialog 
+					<SharedUploadURLDialog 
 						currentUrl={documentUrl}
 						onClose={handleCancelUploadURL}
 						onSave={handleSaveUploadURL}
@@ -285,6 +307,13 @@ function Root() {
 					<SendExampleEmailDialog 
 						onClose={() => setIsExampleEmailDialogOpen(false)}
 						onSend={handleSendExampleEmail}
+					/>
+				)}
+				{isUploadURLsDialogOpen && (
+					<UploadURLsDialog 
+						applicants={pagedApplicants.flat().filter(applicant => dialogSelectedIds.includes(applicant.id))}
+						onClose={handleCancelUploadURLs}
+						onNext={handleSaveUploadURLs}
 					/>
 				)}
 			</div>

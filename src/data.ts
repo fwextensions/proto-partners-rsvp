@@ -13,6 +13,7 @@ export interface Applicant {
   status?: Status;
   hasAlternateContact?: boolean;
   noEmail?: boolean;
+  uploadUrl?: string;
 }
 
 const page1: Applicant[] = [
