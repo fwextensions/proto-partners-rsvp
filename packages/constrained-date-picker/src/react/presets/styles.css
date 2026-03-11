@@ -1,0 +1,4 @@
+/* Combined styles for all presets */
+@import "./HorizontalStrip.css";
+@import "./CalendarGrid.css";
+@import "./CompactPicker.css";

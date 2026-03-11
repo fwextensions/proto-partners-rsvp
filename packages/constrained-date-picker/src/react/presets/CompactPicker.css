@@ -1,0 +1,40 @@
+/* === CompactPicker preset === */
+
+.cdp-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--cdp-compact-gap, 8px);
+}
+.cdp-compact:focus {
+  outline: 2px solid var(--cdp-focus-ring, #3b82f6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.cdp-compact-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cdp-compact-padding, 6px 14px);
+  border-radius: var(--cdp-compact-radius, 9999px);
+  border: 1px solid var(--cdp-compact-border, #d1d5db);
+  background: var(--cdp-compact-bg, #fff);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.875rem;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+.cdp-compact-item:hover:not(.cdp-compact-item--selected):not(.cdp-compact-item--disabled) {
+  background: var(--cdp-hover-bg, #dbeafe);
+  border-color: var(--cdp-hover-border, #93c5fd);
+}
+.cdp-compact-item--selected {
+  background: var(--cdp-selected-bg, #2563eb);
+  color: var(--cdp-selected-text, #fff);
+  border-color: var(--cdp-selected-bg, #2563eb);
+  cursor: default;
+}
+.cdp-compact-item--disabled {
+  opacity: var(--cdp-disabled-opacity, 0.4);
+  cursor: default;
+}

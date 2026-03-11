@@ -1,0 +1,125 @@
+/* === HorizontalStrip preset === */
+
+.cdp-strip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cdp-strip-scroll {
+  display: flex;
+  gap: var(--cdp-gap, 2px);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  /* Hide scrollbar across browsers */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.cdp-strip-scroll::-webkit-scrollbar {
+  display: none;
+}
+.cdp-strip-scroll:focus {
+  outline: 2px solid var(--cdp-focus-ring, #3b82f6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Navigation buttons --- */
+.cdp-strip-nav {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--cdp-nav-color, #4b5563);
+}
+.cdp-strip-nav:hover:not(:disabled) {
+  background: var(--cdp-nav-hover-bg, #f3f4f6);
+}
+.cdp-strip-nav:active:not(:disabled) {
+  background: var(--cdp-nav-active-bg, #e5e7eb);
+}
+.cdp-strip-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.cdp-strip-nav-icon {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Items (date cells) --- */
+.cdp-strip-item {
+  flex-shrink: 0;
+  width: var(--cdp-item-size, 3.5rem);
+  height: var(--cdp-item-size, 3.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  border-radius: var(--cdp-item-radius, 4px);
+  cursor: pointer;
+  user-select: none;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+.cdp-strip-item--compact {
+  --cdp-item-size: 2.75rem;
+  font-size: 0.75rem;
+}
+.cdp-strip-item--large {
+  --cdp-item-size: 4.5rem;
+  font-size: 1rem;
+}
+.cdp-strip-item:hover:not([aria-disabled]):not(.cdp-strip-item--selected) {
+  background: var(--cdp-hover-bg, #dbeafe);
+}
+.cdp-strip-item--selected {
+  background: var(--cdp-selected-bg, #2563eb);
+  color: var(--cdp-selected-text, #fff);
+  cursor: default;
+}
+.cdp-strip-item[aria-disabled="true"] {
+  opacity: var(--cdp-disabled-opacity, 0.4);
+  cursor: default;
+}
+.cdp-strip-item--weekend {
+  opacity: var(--cdp-weekend-opacity, 0.5);
+}
+.cdp-strip-item--weekend.cdp-strip-item--selected {
+  opacity: 1;
+}
+
+/* Date text styling */
+.cdp-strip-item-day {
+  opacity: 0.7;
+  font-size: 0.75em;
+}
+.cdp-strip-item-date {
+  font-weight: 600;
+}
+
+/* --- Divider (month label) --- */
+.cdp-strip-divider {
+  flex-shrink: 0;
+  width: var(--cdp-item-size, 3.5rem);
+  height: var(--cdp-item-size, 3.5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  scroll-snap-align: start;
+  border-left: var(--cdp-divider-border, 4px solid #e5e7eb);
+  user-select: none;
+  cursor: default;
+}
+.cdp-strip-divider-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--cdp-divider-color, #6b7280);
+}

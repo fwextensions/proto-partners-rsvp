@@ -1,0 +1,103 @@
+/* === CalendarGrid preset === */
+
+.cdp-grid {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.875rem;
+}
+.cdp-grid:focus {
+  outline: 2px solid var(--cdp-focus-ring, #3b82f6);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* --- Header with month title + nav --- */
+.cdp-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cdp-grid-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+.cdp-grid-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--cdp-nav-color, #4b5563);
+}
+.cdp-grid-nav:hover:not(:disabled) {
+  background: var(--cdp-nav-hover-bg, #f3f4f6);
+}
+.cdp-grid-nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.cdp-grid-nav-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* --- Day-of-week headers --- */
+.cdp-grid-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+}
+.cdp-grid-dayheader {
+  padding: 4px;
+  font-weight: 500;
+  color: var(--cdp-dayheader-color, #6b7280);
+  font-size: 0.75rem;
+}
+
+/* --- Grid body --- */
+.cdp-grid-body {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--cdp-grid-gap, 2px);
+}
+
+/* --- Cells --- */
+.cdp-grid-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cdp-cell-size, 2.25rem);
+  height: var(--cdp-cell-size, 2.25rem);
+  border-radius: var(--cdp-item-radius, 4px);
+  cursor: pointer;
+  user-select: none;
+}
+.cdp-grid-cell--empty {
+  cursor: default;
+}
+.cdp-grid-cell:hover:not(.cdp-grid-cell--selected):not(.cdp-grid-cell--disabled):not(.cdp-grid-cell--empty) {
+  background: var(--cdp-hover-bg, #dbeafe);
+}
+.cdp-grid-cell--selected {
+  background: var(--cdp-selected-bg, #2563eb);
+  color: var(--cdp-selected-text, #fff);
+  cursor: default;
+}
+.cdp-grid-cell--today {
+  font-weight: 700;
+}
+.cdp-grid-cell--disabled {
+  opacity: var(--cdp-disabled-opacity, 0.4);
+  cursor: default;
+}
+.cdp-grid-cell--weekend {
+  opacity: var(--cdp-weekend-opacity, 0.6);
+}
+.cdp-grid-cell--weekend.cdp-grid-cell--selected {
+  opacity: 1;
+}
