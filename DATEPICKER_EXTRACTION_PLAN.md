@@ -47,20 +47,30 @@ The prototype's DatePicker is a **horizontal scrolling day-strip** purpose-built
 │   ├── constraints.ts       # Constraint builders & evaluation
 │   ├── date-set.ts          # Generate date arrays from constraints
 │   ├── navigation.ts        # Keyboard nav state machine
+│   ├── filters.ts           # Common filter predicates (weekdaysOnly, etc.)
 │   └── types.ts             # Shared types
 │
-└── react/             # React bindings (headless components + hooks)
-    ├── context.ts           # DatePickerContext
-    ├── use-date-picker.ts   # Core hook (state, handlers, ARIA)
-    ├── Root.tsx             # Provider + orchestrator
-    ├── Item.tsx             # Single selectable date
-    ├── Group.tsx            # Logical grouping (e.g., month)
-    ├── GroupLabel.tsx        # Label for a group
-    ├── Navigation.tsx       # Prev/Next control
-    └── index.ts             # Public API
+├── react/             # React bindings (headless components + hooks)
+│   ├── context.ts           # DatePickerContext
+│   ├── use-date-picker.ts   # Core hook (state, handlers, ARIA)
+│   ├── Root.tsx             # Provider + orchestrator
+│   ├── Item.tsx             # Single selectable date
+│   ├── Group.tsx            # Logical grouping (e.g., month)
+│   ├── GroupLabel.tsx        # Label for a group
+│   ├── Navigation.tsx       # Prev/Next control
+│   └── index.ts             # Public API
+│
+└── react/presets/     # Ready-to-use composed components (CSS included)
+    ├── HorizontalStrip.tsx        # Scrollable day strip (current prototype layout)
+    ├── HorizontalStrip.css        # Minimal structural + theme CSS
+    ├── CalendarGrid.tsx           # Month calendar grid
+    ├── CalendarGrid.css
+    ├── CompactPicker.tsx          # Pill/chip selector for sparse sets (years, months)
+    ├── CompactPicker.css
+    └── index.ts
 ```
 
-Splitting `core` from `react` keeps the door open for future framework bindings (Vue, Svelte, etc.) and makes the logic independently testable.
+Splitting `core` from `react` keeps the door open for future framework bindings (Vue, Svelte, etc.) and makes the logic independently testable. The `presets/` layer provides batteries-included components for consumers who want something working immediately.
 
 ---
 
@@ -232,7 +242,151 @@ Follow the Radix `Slot` approach: when `asChild` is true, the component merges i
 
 ---
 
-## 5. Scenario Walkthrough: How Different Apps Use This
+## 5. Presets: Batteries-Included Defaults
+
+Pure headless is powerful but creates a high barrier to entry. The library should also offer **presets** — pre-composed components that work out of the box and are incrementally customizable. Think of it like Radix Primitives vs. Radix Themes: the primitives are headless, the themes give you a working UI that you can progressively peel apart.
+
+### 5.1 Three Tiers of Usage
+
+| Tier | Import from | What you get | Who it's for |
+|---|---|---|---|
+| **Quick start** | `@constrained-date-picker/react/presets` | Drop-in components with default styles, just pass a constraint | Prototyping, internal tools, "I just need a date picker" |
+| **Compose** | `@constrained-date-picker/react` | Headless compound components, bring your own markup and styles | Design-system teams, custom UIs |
+| **Full control** | `@constrained-date-picker/react` + `core` | Raw hook + pure logic functions | Advanced use cases, non-standard layouts |
+
+### 5.2 Preset Components
+
+#### `HorizontalStrip` — the current prototype's layout, generalized
+
+```tsx
+import { HorizontalStrip } from "@constrained-date-picker/react/presets";
+import { daysFromToday, weekdaysOnly } from "@constrained-date-picker/core";
+
+// Minimal — works immediately
+<HorizontalStrip
+  constraint={daysFromToday(30)}
+  onValueChange={setDeadline}
+/>
+
+// With common options
+<HorizontalStrip
+  constraint={daysFromToday(30)}
+  filter={weekdaysOnly}
+  onValueChange={setDeadline}
+  showToday={true}
+  itemSize="compact"          // "compact" | "default" | "large"
+  className="my-override"     // applied to outer container
+/>
+```
+
+Includes: horizontal scroll, snap points, month dividers, prev/next chevrons, keyboard nav, selected state, disabled "today" styling. Ships a small CSS file (~2KB) with CSS custom properties for theming.
+
+#### `CalendarGrid` — traditional month grid
+
+```tsx
+import { CalendarGrid } from "@constrained-date-picker/react/presets";
+import { daysFromToday } from "@constrained-date-picker/core";
+
+<CalendarGrid
+  constraint={daysFromToday(365)}
+  onValueChange={setDate}
+/>
+```
+
+Includes: month-by-month grid, day-of-week headers, prev/next month navigation, selected + disabled states.
+
+#### `CompactPicker` — for sparse sets (years, months)
+
+```tsx
+import { CompactPicker } from "@constrained-date-picker/react/presets";
+import { yearsFromToday } from "@constrained-date-picker/core";
+
+<CompactPicker
+  constraint={yearsFromToday(10)}
+  onValueChange={setYear}
+  formatLabel={(date) => date.getFullYear().toString()}
+/>
+```
+
+Includes: horizontal pill/chip layout, wrap behavior, selected state.
+
+### 5.3 Styling Strategy for Presets
+
+Presets ship with **minimal structural CSS + CSS custom properties** for theming. No Tailwind dependency, no CSS-in-JS runtime.
+
+```css
+/* HorizontalStrip.css — ships with the preset */
+.cdp-strip { display: flex; align-items: center; gap: 2px; }
+.cdp-strip-scroll { display: flex; gap: 2px; overflow-x: auto; scroll-snap-type: x mandatory; }
+.cdp-strip-item { flex-shrink: 0; width: var(--cdp-item-size, 3.5rem); height: var(--cdp-item-size, 3.5rem); scroll-snap-align: start; }
+.cdp-strip-item[aria-selected="true"] { background: var(--cdp-selected-bg, #2563eb); color: var(--cdp-selected-text, #fff); }
+.cdp-strip-item[aria-disabled="true"] { opacity: var(--cdp-disabled-opacity, 0.4); cursor: default; }
+.cdp-strip-item:not([aria-disabled]):hover { background: var(--cdp-hover-bg, #dbeafe); }
+.cdp-strip-divider { border-left: var(--cdp-divider-border, 4px solid #e5e7eb); }
+/* etc. */
+```
+
+Consumers override by:
+1. **CSS custom properties** — easiest: set `--cdp-selected-bg: purple` on a parent.
+2. **className prop** — override the outer container class.
+3. **Swapping to headless** — peel the preset apart and use compound components directly when they outgrow it.
+
+### 5.4 Common Constraint Shortcuts & Filters
+
+The `core` package exports convenience functions so consumers don't have to write predicates for common cases:
+
+```ts
+// Filters (composable with any constraint)
+import {
+  weekdaysOnly,     // excludes Saturday & Sunday
+  weekendsOnly,     // only Saturday & Sunday
+  excludeToday,     // makes today visible but disabled
+  excludeDates,     // excludeDates([christmas, newYears])
+  onlyDates,        // allowlist — only these specific dates are selectable
+} from "@constrained-date-picker/core";
+
+// Shorthand constraints (combine base + filter in one call)
+import {
+  nextWeekdays,     // nextWeekdays(30) = daysFromToday(30) + weekdaysOnly
+  nextMonths,       // alias for monthsFromToday
+  nextYears,        // alias for yearsFromToday
+} from "@constrained-date-picker/core";
+
+// Usage
+<HorizontalStrip constraint={nextWeekdays(30)} onValueChange={setDate} />
+```
+
+### 5.5 Progressive Customization Path
+
+The key insight: presets are not a separate API. They are thin compositions of the same headless primitives. A consumer's journey looks like:
+
+1. **Start with a preset**: `<HorizontalStrip constraint={daysFromToday(30)} />`
+2. **Theme it**: override CSS custom properties.
+3. **Customize rendering**: pass `renderItem`, `renderDivider`, or `renderNavigation` props to replace specific parts while keeping the layout.
+4. **Go headless**: when customization props aren't enough, import `DatePicker.Root` / `DatePicker.Item` / etc. and build the layout themselves. The preset source code serves as a reference implementation.
+
+```tsx
+// Step 3: Customize specific parts of a preset
+<HorizontalStrip
+  constraint={daysFromToday(30)}
+  onValueChange={setDate}
+  renderItem={(entry, { selected, disabled }) => (
+    <div className={`my-day ${selected ? "my-selected" : ""}`}>
+      <span>{entry.date.getDate()}</span>
+      {isToday(entry.date) && <span className="badge">Today</span>}
+    </div>
+  )}
+  renderDivider={(group) => (
+    <div className="my-month-label">{group.label}</div>
+  )}
+/>
+```
+
+This means presets have **render props for each visual slot**, giving partial customization before you need to drop down to headless. The render props are optional — each has a sensible default.
+
+---
+
+## 6. Scenario Walkthrough: How Different Apps Use This
 
 ### Scenario A: "Pick a deadline in the next 30 days" (current prototype)
 
@@ -317,16 +471,26 @@ const constraint = custom(
 9. Add ARIA attributes: `role="listbox"` on container, `role="option"` + `aria-selected` + `aria-disabled` on items, `role="separator"` on group labels.
 10. Write integration tests (React Testing Library) for selection, keyboard nav, and ARIA.
 
-### Phase 3: Constraint builders
+### Phase 3: Constraint builders & filters
 11. Implement `dateRange`, `monthsFromToday`, `yearsFromToday`, `filter`, `custom`.
-12. Implement grouping strategies (`groupByMonth`, `groupByYear`, custom).
-13. Test each constraint builder with the full component stack.
+12. Implement common filters: `weekdaysOnly`, `weekendsOnly`, `excludeToday`, `excludeDates`, `onlyDates`.
+13. Implement shorthand constraints: `nextWeekdays`, `nextMonths`, `nextYears`.
+14. Implement grouping strategies (`groupByMonth`, `groupByYear`, custom).
+15. Test each constraint builder and filter with the full component stack.
 
-### Phase 4: Polish and documentation
-14. Write JSDoc on all public APIs.
-15. Create example implementations covering scenarios A–D above.
-16. Bundle configuration (Vite library mode or tsup), ESM + CJS output, `exports` map in package.json.
-17. Write a short README with quick-start examples.
+### Phase 4: Presets
+16. Build `HorizontalStrip` preset by composing headless primitives — port the current prototype's layout.
+17. Write structural CSS with custom properties for `HorizontalStrip`.
+18. Add `renderItem`, `renderDivider`, `renderNavigation` escape hatches to `HorizontalStrip`.
+19. Build `CalendarGrid` preset.
+20. Build `CompactPicker` preset.
+21. Test presets in isolation and with various constraints.
+
+### Phase 5: Polish and documentation
+22. Write JSDoc on all public APIs.
+23. Create example implementations covering scenarios A–D above, showing all three tiers (preset → compose → full control).
+24. Bundle configuration (Vite library mode or tsup), ESM + CJS output, `exports` map in package.json. Ensure preset CSS is importable separately.
+25. Write a short README with quick-start examples starting from the preset tier.
 
 ---
 
@@ -338,7 +502,8 @@ const constraint = custom(
 | **Constraints as the primary API, not `minDate`/`maxDate` props** | A single `constraint` prop replaces multiple conflicting props and covers sparse date sets (appointments, fiscal years) that min/max can't express. |
 | **Compound components with `asChild`, not render props everywhere** | Better DX for simple cases; `asChild` composes more naturally than render props when consumers already have styled components. Render-prop iteration (`Groups` children-as-function) is used only where a mapping function is genuinely needed. |
 | **Core logic separated from React** | Enables future framework ports, simplifies unit testing, and keeps the React layer thin. |
-| **No built-in "today" / "weekend" concepts** | These are presentation concerns. A consumer can derive them (`isToday(entry.date)`, `isWeekend(entry.date)`) and render accordingly. The constraint layer's `isDisabled` handles "today is not selectable." |
+| **No built-in "today" / "weekend" concepts in headless layer** | These are presentation concerns. The headless layer doesn't embed them, but `core` exports `weekdaysOnly`, `excludeToday`, etc. as composable filters, and presets wire up sensible defaults. |
+| **Presets are compositions, not a separate API** | Presets import and compose the same headless primitives consumers use. This means they serve as both working components *and* reference implementations. No hidden internal APIs. |
 | **`Groups` uses children-as-function** | Groups are dynamic (determined by constraint + grouping strategy), so a render-prop pattern is the most natural way to iterate them without forcing consumers to call a hook. |
 | **Single `onValueChange(date: Date)` callback** | Matches Radix convention. No `onDateSelect` with formatted strings. |
 
